@@ -1,6 +1,6 @@
 zmc.krupa.net.pl {
     # prometheus 0.0.0.0:9180
-    proxy /unipi/scheduler 192.168.20.4:3000 {
+    proxy /unipi/scheduler 192.168.20.5:3000 {
         transparent
         without /unipi/scheduler
     }
