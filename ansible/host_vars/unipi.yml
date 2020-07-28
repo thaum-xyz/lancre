@@ -16,19 +16,13 @@ rpi_config_params: |
   dtparam=act_led_trigger=heartbeat
   #dtparam=pwr_led_trigger=heartbeat
 
-data_directory: /srv/configs
-
-# FIXME: Create volume before run
-container_volumes:
-  - mosquitto_data
-
 containers:
   - name: mosquitto
     image: eclipse-mosquitto:1.6.8
     network_mode: host
     volumes:
-      - "/srv/config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro"
-      - mosquitto_data:/mosquitto/data
+      - /srv/config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - /srv/mosquitto:/mosquitto/data
       - /etc/localtime:/etc/localtime:ro
   - name: mqtt-logger
     image: eclipse-mosquitto:1.6.8
@@ -42,7 +36,7 @@ containers:
     network_mode: host
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - "/srv/config/bridge.yaml:/config.yaml:ro"
+      - /srv/config/bridge.yaml:/config.yaml:ro
 
   # SENSORS
   - name: flow-meter
@@ -66,7 +60,7 @@ containers:
     command: ["-clientid", "thermostat"]
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - "/srv/config/thermostat.yaml:/config.yaml:ro"
+      - /srv/config/thermostat.yaml:/config.yaml:ro
 
   # CONTROLLERS
   - name: scheduler
@@ -84,13 +78,13 @@ containers:
     #   - "--invert"
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - "/srv/config/solar.yaml:/config.yaml:ro"
+      - /srv/config/solar.yaml:/config.yaml:ro
   - name: heater
     image: automatedhome/heater:0.0.2
     network_mode: host
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - "/srv/config/heater.yaml:/config.yaml:ro"
+      - /srv/config/heater.yaml:/config.yaml:ro
   - name: circulation
     image: automatedhome/circulation:0.0.1
     network_mode: host

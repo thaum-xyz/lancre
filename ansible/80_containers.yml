@@ -1,31 +1,32 @@
 ---
-# TODO: manage docker installation on unipi
-- hosts: hmi
+- hosts: docker
+  become: true
+  tasks:
+  - name: Create data and configuration directory
+    file:
+      path: "/srv/config"
+      state: directory
+  - name: Copy configuration files
+    copy:
+      src: "{{ item }}"
+      dest: "/srv/config/{{ item | basename }}"
+    with_fileglob:
+      - "files/{{ inventory_hostname }}/*"
+
+- hosts: docker
   become: true
   roles:
-  - geerlingguy.docker_arm
+    - geerlingguy.docker_arm
   tasks:
   - name: Add docker image prune
     cron:
       name: docker prune
       cron_file: /etc/crontab
       user: root
-      minute: 34
-      hour: 1
-      weekday: 5
+      minute: "34"
+      hour: "1"
+      weekday: "5"
       job: "docker system prune --all --force"
-  # TODO: Better volume management
-  # TODO: this is only for containers, possibly should be moved to 80_containers.yml
-  - name: Add data directory
-    file:
-      path: "{{ data_directory }}"
-      state: directory
-      owner: pi
-    when: data_directory is defined
-  # TODO: make it generic
-  - name: create MQTT data volume
-    docker_volume:
-      name: mosquitto_data
   - name: download latest images
     docker_image:
       name: "{{ item.image }}"

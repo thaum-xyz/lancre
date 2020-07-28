@@ -1,5 +1,7 @@
 ---
 - name: cloudalchemy.node-exporter
+- name: cloudalchemy.prometheus
+- name: cloudalchemy.pushgateway
 - name: paulfantom.kiosk
 - name: paulfantom.raspberry
 - name: paulfantom.system
@@ -9,7 +11,6 @@
   version: v1.7.1
 - name: dev-sec.ssh-hardening
   version: 9.2.0
-- name: cloudalchemy.prometheus
+- name: geerlingguy.docker_arm
+  version: 4.0.0
 
-# TODO: extract role from ankhmorpork
-# - name: paulfantom.raspberry

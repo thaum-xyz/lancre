@@ -5,4 +5,4 @@
 
 #- import_playbook: 30_monitoring.yml
 #
-#- import_playbook: 80_containers.yml
+- import_playbook: 80_containers.yml
