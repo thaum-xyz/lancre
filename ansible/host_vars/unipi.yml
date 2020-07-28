@@ -16,6 +16,7 @@ rpi_config_params: |
   dtparam=act_led_trigger=heartbeat
   #dtparam=pwr_led_trigger=heartbeat
 
+data_directory: /srv/configs
 
 # FIXME: Create volume before run
 container_volumes:

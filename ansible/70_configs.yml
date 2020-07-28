@@ -1,1 +1,14 @@
 # TODO: Copy configs from ansible/unipi/config to /srv/config data directory on unipi
+- hosts: unipi
+  become: true
+  tasks:
+  - name: Create data and configuration directory
+    file:
+      path: "{{ data_directory }}"
+      state: directory
+  - name: Copy configuration files
+    copy:
+      src: "{{ item }}"
+      dest: "{{ data_directory }}/{{ item | basename }}"
+    with_fileglobs:
+      - files/unipi/config/*

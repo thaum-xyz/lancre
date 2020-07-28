@@ -1,9 +1,11 @@
 ---
-- hosts: kiosk
+- name: setup kiosk
+  hosts: kiosk
   become: true
   roles:
   - paulfantom.kiosk
   tasks:
+  # TODO: This possibly should go into kiosk role
   - name: Create openbox user config dir
     file:
       path: /home/pi/.config/openbox
@@ -13,3 +15,35 @@
     copy:
       src: rc.xml
       dest: /home/pi/.config/openbox/rc.xml
+
+- name: touchscreen workarounds 
+  hosts: hmi
+  become: true
+  tasks:
+  - name: Copy devices registration script
+    copy:
+      src: "devices.sh"
+      dest: "/usr/local/bin/devices.sh"
+      mode: 0755
+  - name: Run devices.sh every 5 minutes
+    cron:
+      cron_file: "/etc/crontab"
+      user: root
+      name: "input devices data"
+      minute: "*/5"
+      job: "/usr/local/bin/devices.sh"
+  - name: Power off device when touchscreen is not registered
+    cron:
+      cron_file: "/etc/crontab"
+      user: root
+      name: "poweroff when no touchscreen"
+      special_time: "reboot"
+      job: "sleep 12m && test -f '/sys/devices/platform/soc/soc:firmware/soc:firmware:touchscreen/input/input0/power/control' || poweroff"
+
+
+# TODO: add application which will watch prometheus metrics (touchscreen and up()) and powercycle HMI PoE when both are != 1
+#- name: powercycle HMI when OFF
+#  hosts: controller
+#  become: true
+#  tasks:
+ 

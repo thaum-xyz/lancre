@@ -14,3 +14,4 @@ settings:
   mode:
     address: "thermostat/settings/mode"
     value: "auto"
+
