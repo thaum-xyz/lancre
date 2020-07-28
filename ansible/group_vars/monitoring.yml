@@ -1,0 +1,22 @@
+---
+prometheus_web_external_url: "https://lancre.thaum.xyz"
+prometheus_storage_retention: "2h"
+prometheus_global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+prometheus_external_labels:
+  environment: lancre.thaum.xyz
+prometheus_alert_rules: []
+prometheus_scrape_configs:
+  - job_name: prometheus
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - garaz:9090
+  - job_name: 'node'
+    static_configs:
+      - targets:
+          - 'hmi:9100'
+          - 'unipi:9100'
+          - 'garaz:9100'

@@ -1,0 +1,116 @@
+---
+version: '2'
+services:
+  # BASIC SERVICES
+  mosquitto:
+    image: eclipse-mosquitto:1.6.8
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - "${PWD}/config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro"
+      - mosquitto_data:/mosquitto/data
+      - /etc/localtime:/etc/localtime:ro
+  mqtt-logger:
+    image: eclipse-mosquitto:1.6.8
+    restart: unless-stopped
+    network_mode: host
+    entrypoint: "/usr/bin/mosquitto_sub"
+    command: ["-h", "localhost", "-F", "%I: %t: %p", "-t", "#"]
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-file: "5"
+        max-size: "10m"
+  bridge:
+    image: automatedhome/evok-mqtt-bridge:0.0.2
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      - mosquitto
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - "${PWD}/config/bridge.yaml:/config.yaml:ro"
+
+  # SENSORS
+  flow-meter:
+    image: automatedhome/flow-meter:latest
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      - mosquitto
+    command:
+      - "-outTopic"
+      - "solar/flow/rate"
+      - "-litersPerRotation"
+      - "0.1"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+  analog-in:
+    image: automatedhome/analog-temperature:0.0.1
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      - mosquitto
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+  thermostat:
+    image: automatedhome/thermostat:latest
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      - mosquitto
+    command: ["-clientid", "thermostat"]
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - "${PWD}/config/thermostat.yaml:/config.yaml:ro"
+
+  # CONTROLLERS
+  scheduler:
+    image: automatedhome/scheduler:latest
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      - bridge
+      - mosquitto
+    command:
+      - "-topic=thermostat/schedule"
+      - "-referers=https://zmc.krupa.net.pl/schedule,https://zmc.krupa.net.pl/unipi/scheduler/"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+  solar:
+    image: automatedhome/solar:latest
+    restart: unless-stopped
+    network_mode: host
+    # command:
+    #   - "--invert"
+    depends_on:
+      - mosquitto
+      - bridge
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - "${PWD}/config/solar.yaml:/config.yaml:ro"
+  heater:
+    image: automatedhome/heater:0.0.2
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      - mosquitto
+      - bridge
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - "${PWD}/config/heater.yaml:/config.yaml:ro"
+  circulation:
+    image: automatedhome/circulation:0.0.1
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      - mosquitto
+      - bridge
+    command: ["-inTopic", "evok/input/5/value", "-outTopic", "evok/relay/4/set"]
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+
+volumes:
+  mosquitto_data:

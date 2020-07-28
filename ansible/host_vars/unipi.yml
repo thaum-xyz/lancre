@@ -1,0 +1,98 @@
+---
+locales_present:
+  - en_US.UTF-8
+  - en_GB.UTF-8
+locales_default:
+  lang: en_US.UTF-8
+
+system_earlyoom_enabled: false
+rpi_swap_size: 100
+rpi_config_params: |
+  dtparam=i2c_arm=on
+  device_tree_param=i2c1=on
+  dtoverlay=i2c-rtc,mcp7941x
+  dtoverlay=unipiee
+  dtoverlay=neuronee
+  dtparam=act_led_trigger=heartbeat
+  #dtparam=pwr_led_trigger=heartbeat
+
+
+# FIXME: Create volume before run
+container_volumes:
+  - mosquitto_data
+
+containers:
+  - name: mosquitto
+    image: eclipse-mosquitto:1.6.8
+    network_mode: host
+    volumes:
+      - "/srv/config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro"
+      - mosquitto_data:/mosquitto/data
+      - /etc/localtime:/etc/localtime:ro
+  - name: mqtt-logger
+    image: eclipse-mosquitto:1.6.8
+    network_mode: host
+    entrypoint: "/usr/bin/mosquitto_sub"
+    command: ["-h", "localhost", "-F", "%I: %t: %p", "-t", "#"]
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+  - name: bridge
+    image: automatedhome/evok-mqtt-bridge:0.0.2
+    network_mode: host
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - "/srv/config/bridge.yaml:/config.yaml:ro"
+
+  # SENSORS
+  - name: flow-meter
+    image: automatedhome/flow-meter:latest
+    network_mode: host
+    command:
+      - "-outTopic"
+      - "solar/flow/rate"
+      - "-litersPerRotation"
+      - "0.1"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+  - name: analog-in
+    image: automatedhome/analog-temperature:0.0.1
+    network_mode: host
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+  - name: thermostat
+    image: automatedhome/thermostat:latest
+    network_mode: host
+    command: ["-clientid", "thermostat"]
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - "/srv/config/thermostat.yaml:/config.yaml:ro"
+
+  # CONTROLLERS
+  - name: scheduler
+    image: automatedhome/scheduler:latest
+    network_mode: host
+    command:
+      - "-topic=thermostat/schedule"
+      - "-referers=https://zmc.krupa.net.pl/schedule,https://zmc.krupa.net.pl/unipi/scheduler/"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+  - name: solar
+    image: automatedhome/solar:latest
+    network_mode: host
+    # command:
+    #   - "--invert"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - "/srv/config/solar.yaml:/config.yaml:ro"
+  - name: heater
+    image: automatedhome/heater:0.0.2
+    network_mode: host
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - "/srv/config/heater.yaml:/config.yaml:ro"
+  - name: circulation
+    image: automatedhome/circulation:0.0.1
+    network_mode: host
+    command: ["-inTopic", "evok/input/5/value", "-outTopic", "evok/relay/4/set"]
+    volumes:
+      - /etc/localtime:/etc/localtime:ro

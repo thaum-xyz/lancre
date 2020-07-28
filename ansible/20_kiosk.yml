@@ -1,0 +1,15 @@
+---
+- hosts: kiosk
+  become: true
+  roles:
+  - paulfantom.kiosk
+  tasks:
+  - name: Create openbox user config dir
+    file:
+      path: /home/pi/.config/openbox
+      state: directory
+      owner: pi
+  - name: Setup openbox fullscreen apps
+    copy:
+      src: rc.xml
+      dest: /home/pi/.config/openbox/rc.xml

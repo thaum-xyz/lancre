@@ -1,0 +1,30 @@
+---
+- hosts: all
+  become: true
+  roles:
+  - oefenweb.locales
+  - jnv.unattended-upgrades
+  - dev-sec.ssh-hardening
+  - cloudalchemy.node-exporter
+  - paulfantom.system
+  - paulfantom.raspberry
+
+#- hosts: control
+#  become: true
+#  tasks:
+#  - name: Add dynamic DNS updater
+#    cron:
+#      name: dyndns
+#      cron_file: /etc/crontab
+#      user: 'pi'
+#      minute: '*/15'
+#      # FIXME: secure secret
+#      job: 'curl -fsS --user "thaum.xyz-lancre:JPbNcG3a9UyqtzSfj2rbXjteBDcd6e" "https://www.ovh.com/nic/update?system=dyndns&hostname=lancre.thaum.xyz"'
+
+#- hosts: all
+#  become: true
+#  tasks:
+#  - name: Remove old deployment mechanisms
+#    file:
+#      path: /etc/cron.d/deployment
+#      state: absent

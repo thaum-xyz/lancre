@@ -1,0 +1,15 @@
+---
+- name: cloudalchemy.node-exporter
+- name: paulfantom.kiosk
+- name: paulfantom.raspberry
+- name: paulfantom.system
+- name: oefenweb.locales
+  version: v1.0.37
+- name: jnv.unattended-upgrades
+  version: v1.7.1
+- name: dev-sec.ssh-hardening
+  version: 9.2.0
+- name: cloudalchemy.prometheus
+
+# TODO: extract role from ankhmorpork
+# - name: paulfantom.raspberry

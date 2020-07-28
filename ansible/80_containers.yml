@@ -1,0 +1,49 @@
+---
+# TODO: manage docker installation on unipi
+- hosts: hmi
+  become: true
+  roles:
+  - geerlingguy.docker_arm
+  tasks:
+  - name: Add docker image prune
+    cron:
+      name: docker prune
+      cron_file: /etc/crontab
+      user: root
+      minute: 34
+      hour: 1
+      weekday: 5
+      job: "docker system prune --all --force"
+  # TODO: Better volume management
+  # TODO: this is only for containers, possibly should be moved to 80_containers.yml
+  - name: Add data directory
+    file:
+      path: "{{ data_directory }}"
+      state: directory
+      owner: pi
+    when: data_directory is defined
+  # TODO: make it generic
+  - name: create MQTT data volume
+    docker_volume:
+      name: mosquitto_data
+  - name: download latest images
+    docker_image:
+      name: "{{ item.image }}"
+      state: present
+      force: true
+    with_items: "{{ containers }}"
+  - name: create containers
+    docker_container:
+      restart_policy: "unless-stopped"
+      log_driver: json-file
+      log_options:
+        max-file: "5"
+        max-size: "10m"
+      image: "{{ item.image }}"
+      name: "{{ item.name }}"
+      network_mode: "{{ item.network_mode | default(omit) }}"
+      entrypoint: "{{ item.entrypoint | default(omit) }}"
+      command: "{{ item.command | default(omit) }}"
+      volumes: "{{ item.volumes | default(omit) }}"
+      env: "{{ item.env | default(omit) }}"
+    with_items: "{{ containers }}"
