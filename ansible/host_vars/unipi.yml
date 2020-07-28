@@ -16,19 +16,21 @@ rpi_config_params: |
   dtparam=act_led_trigger=heartbeat
   #dtparam=pwr_led_trigger=heartbeat
 
+docker_version: 5:19.03.12~3-0~raspbian-stretch
+
 containers:
   - name: mosquitto
-    image: eclipse-mosquitto:1.6.8
+    image: eclipse-mosquitto:1.6
     network_mode: host
     volumes:
       - /srv/config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - /srv/mosquitto:/mosquitto/data
       - /etc/localtime:/etc/localtime:ro
   - name: mqtt-logger
-    image: eclipse-mosquitto:1.6.8
+    image: eclipse-mosquitto:1.6
     network_mode: host
     entrypoint: "/usr/bin/mosquitto_sub"
-    command: ["-h", "localhost", "-F", "%I: %t: %p", "-t", "#"]
+    command: '-h localhost -F "%I: %t: %p" -t #'
     volumes:
       - /etc/localtime:/etc/localtime:ro
   - name: bridge

@@ -10,7 +10,7 @@
 - name: jnv.unattended-upgrades
   version: v1.7.1
 - name: dev-sec.ssh-hardening
-  version: 9.2.0
+  version: 9.6.0
 - name: geerlingguy.docker_arm
   version: 4.0.0
 
