@@ -42,7 +42,7 @@ containers:
 
   # SENSORS
   - name: flow-meter
-    image: automatedhome/flow-meter:latest
+    image: automatedhome/flow-meter:latest  # TODO: rename to 0.0.2 when images are ready
     network_mode: host
     command:
       - "-outTopic"
@@ -57,7 +57,7 @@ containers:
     volumes:
       - /etc/localtime:/etc/localtime:ro
   - name: thermostat
-    image: automatedhome/thermostat:latest
+    image: automatedhome/thermostat:latest  # TODO: rename to 0.0.3 when images are ready
     network_mode: host
     command: ["-clientid", "thermostat"]
     volumes:
@@ -66,15 +66,15 @@ containers:
 
   # CONTROLLERS
   - name: scheduler
-    image: automatedhome/scheduler:latest
+    image: automatedhome/scheduler:latest  # TODO: release new version
     network_mode: host
     command:
       - "-topic=thermostat/schedule"
-      - "-referers=https://zmc.krupa.net.pl/schedule,https://zmc.krupa.net.pl/unipi/scheduler/"
+      - "-token=VdBTUAakzktLzsYz8nas9JT3hRg8Y7"
     volumes:
       - /etc/localtime:/etc/localtime:ro
   - name: solar
-    image: automatedhome/solar:latest
+    image: automatedhome/solar:latest  # TODO: rename to 0.0.3 when images are ready
     network_mode: host
     # command:
     #   - "--invert"
