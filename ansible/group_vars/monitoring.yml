@@ -7,7 +7,12 @@ prometheus_global:
   evaluation_interval: 15s
 prometheus_external_labels:
   environment: lancre.thaum.xyz
-prometheus_alert_rules: []
+prometheus_alert_rules:
+  - record: solar:evok_temperature_celsius:diff
+    expr: 'sum without(address,circuit) (evok_temperature_celsius{circuit="solar-out"}) - sum without(address,circuit) (evok_temperature_celsius{circuit="solar-in"})'
+  - record: heater:evok_temperature_celsius:diff
+    expr: 'sum without(address,circuit) (evok_temperature_celsius{circuit="heater-out"}) - sum without(address,circuit) (evok_temperature_celsius{circuit="heater-in"})'
+
 prometheus_scrape_configs:
   - job_name: prometheus
     static_configs:
@@ -29,3 +34,36 @@ prometheus_scrape_configs:
     static_configs:
       - targets:
           - 'unipi:7979'
+    metric_relabel_configs:
+      - source_labels: ['circuit']
+        target_label: 'circuit'
+        regex: '28FF89DB06000034'
+        replacement: 'climate-inside'
+      - source_labels: ['circuit']
+        target_label: 'circuit'
+        regex: '287CECBF060000DA'
+        replacement: 'climate-outside'
+      - source_labels: ['circuit']
+        target_label: 'circuit'
+        regex: '28FF5AF502150270'
+        replacement: 'heater-in'
+      - source_labels: ['circuit']
+        target_label: 'circuit'
+        regex: '28FF4D15151501C6'
+        replacement: 'heater-out'
+      - source_labels: ['circuit']
+        target_label: 'circuit'
+        regex: '28FF4C30041503A7'
+        replacement: 'tank'
+      - source_labels: ['circuit']
+        target_label: 'circuit'
+        regex: '28FF1A181515019F'
+        replacement: 'solar-out'
+      - source_labels: ['circuit']
+        target_label: 'circuit'
+        regex: '28FF0A9171150270'
+        replacement: 'solar-in'
+      - source_labels: ['circuit']
+        target_label: 'circuit'
+        regex: '28FF'  # TODO: Fill-in when new sensor gets connected
+        replacement: 'sauna'

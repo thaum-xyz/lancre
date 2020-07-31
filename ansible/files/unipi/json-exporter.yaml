@@ -13,6 +13,7 @@
   path: $.data[*]?(@.dev == "temp")
   labels:
     circuit: $.circuit
+    address: $.address
   values:
     celsius: $.value
 
