@@ -4,7 +4,7 @@ prometheus_storage_retention: "2h"
 prometheus_global:
   scrape_interval: 30s
   scrape_timeout: 10s
-  evaluation_interval: 15s
+  evaluation_interval: 5s
 prometheus_external_labels:
   environment: lancre.thaum.xyz
 prometheus_alert_rules:
