@@ -23,4 +23,8 @@ prometheus_scrape_configs:
           - 'hmi:9100'
           - 'unipi:9100'
           - 'garaz:9100'
-          - 'controller:9100'
+          # - 'controller:9100'
+  - job_name: 'evok'
+    static_configs:
+      - targets:
+          - 'unipi:7979'

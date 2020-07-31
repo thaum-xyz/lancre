@@ -39,6 +39,14 @@ containers:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /srv/config/bridge.yaml:/config.yaml:ro
+  - name: evok-exporter
+    image: quay.io/prometheuscommunity/json-exporter:v0.1.0
+    network_mode: host # exposed on port 7979
+    command:
+      - "http://localhost:8080/json/all"
+      - "/config.yaml"
+    volumes:
+      - /srv/config/json-exporter.yaml:/config.yaml:ro
 
   # SENSORS
   - name: flow-meter
