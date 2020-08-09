@@ -15,26 +15,12 @@ kiosk_browser_params:
   - "--disk-cache-size=1"
 
 containers:
-  - name: restic
-    image: quay.io/paulfantom/restic-mysql:rpi
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /srv/homeassistant:/srv/homeassisant:ro
-      - /var/lib/node_exporter:/metrics:rw
-    env:
-      WHEN: "01:30"
-      DATA_DIRECTORY: "/srv/homeassistant"
-      RESTIC_ARGS: "-v --host hmi -o b2.connections=50 --exclude home-assistant*"
-      RESTIC_FORGET: "--keep-daily 7 --keep-weekly 8 --keep-monthly 24"
-      RESTIC_REPOSITORY: "b2:hmi-lancre-thaum-xyz:/homeassistant"
-      RESTIC_PASSWORD: "xVaSBu92EtQuFHkQMC8yyu5GTWFJX3"
-      B2_ACCOUNT_KEY: "K001wIZ0wuc/YXOveKySxwYYCyCJvG0"
-      B2_ACCOUNT_ID: "001c14f02766f430000000002"
   - name: homeassistant
-    image: homeassistant/raspberrypi3-homeassistant:0.113.1
+    image: homeassistant/raspberrypi3-homeassistant:0.113.3
     network_mode: "host"
     volumes:
-      - "/srv/homeassistant:/config"
+      - "/srv/homeassistant/config:/config"
+      - "/srv/homeassistant/db:/db"
     env:
       TZ: Europe/Warsaw
   - name: mosquitto
