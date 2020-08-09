@@ -1,6 +1,6 @@
 ---
 prometheus_web_external_url: "https://lancre.thaum.xyz"
-prometheus_storage_retention: "2h"
+prometheus_storage_retention: "7d"
 prometheus_global:
   scrape_interval: 30s
   scrape_timeout: 10s
@@ -12,6 +12,12 @@ prometheus_alert_rules:
     expr: 'sum without(address,circuit) (evok_temperature_celsius{circuit="solar-out"}) - sum without(address,circuit) (evok_temperature_celsius{circuit="solar-in"})'
   - record: heater:evok_temperature_celsius:diff
     expr: 'sum without(address,circuit) (evok_temperature_celsius{circuit="heater-out"}) - sum without(address,circuit) (evok_temperature_celsius{circuit="heater-in"})'
+  - record: 'solar:evok_temperature:'
+    expr: 'sum without(circuit) (evok_analog_input_volts{circuit="1"}*200/12)'
+  - record: solar:evok_temperature_high_celsius:diff
+    expr: '(sum without(circuit) (solar:evok_temperature:) + sum without(circuit,address) (evok_temperature_celsius{circuit="solar-in"})) / 2 - sum without(circuit,address) (evok_temperature_celsius{circuit="solar-out"})'
+  - record: solar:evok_temperature_low_celsius:diff
+    expr: 'sum without(circuit) (solar:evok_temperature:) - sum without(circuit,address) (evok_temperature_celsius{circuit="solar-out"})'
 
 prometheus_scrape_configs:
   - job_name: prometheus
