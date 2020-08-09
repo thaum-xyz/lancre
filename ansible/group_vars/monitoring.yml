@@ -15,9 +15,9 @@ prometheus_alert_rules:
   - record: 'solar:evok_temperature:'
     expr: 'sum without(circuit) (evok_analog_input_volts{circuit="1"}*200/12)'
   - record: solar:evok_temperature_high_celsius:diff
-    expr: '(sum without(circuit) (solar:evok_temperature:) + sum without(circuit,address) (evok_temperature_celsius{circuit="solar-in"})) / 2 - sum without(circuit,address) (evok_temperature_celsius{circuit="solar-out"})'
+    expr: '(sum without(circuit) (solar:evok_temperature:) + sum without(circuit,address) (evok_temperature_celsius{circuit="solar-out"})) / 2 - sum without(circuit,address) (evok_temperature_celsius{circuit="solar-in"})'
   - record: solar:evok_temperature_low_celsius:diff
-    expr: 'sum without(circuit) (solar:evok_temperature:) - sum without(circuit,address) (evok_temperature_celsius{circuit="solar-out"})'
+    expr: 'sum without(circuit) (solar:evok_temperature:) - sum without(circuit,address) (evok_temperature_celsius{circuit="solar-in"})'
 
 prometheus_scrape_configs:
   - job_name: prometheus
@@ -73,3 +73,18 @@ prometheus_scrape_configs:
         target_label: 'circuit'
         regex: '28FF'  # TODO: Fill-in when new sensor gets connected
         replacement: 'sauna'
+  - job_name: flow-meter
+    scrape_interval: 5s
+    static_configs:
+      - targets:
+          - 'unipi:7000'
+  - job_name: solar
+    scrape_interval: 5s
+    static_configs:
+      - targets:
+          - 'unipi:7001'
+  - job_name: heater
+    scrape_interval: 10s
+    static_configs:
+      - targets:
+          - 'unipi:7002'
