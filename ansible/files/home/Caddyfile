@@ -1,0 +1,20 @@
+zmc.krupa.net.pl {
+    # prometheus 0.0.0.0:9180
+    proxy /unipi/scheduler 127.0.0.1:3000 {
+        transparent
+        without /unipi/scheduler
+    }
+    proxy / 127.0.0.1:8123 {
+        websocket
+        transparent
+    }
+    tls thaumxyz@gmail.com
+}
+lancre.thaum.xyz {
+    # prometheus 0.0.0.0:9180
+    proxy / 192.168.20.45:9090 {
+        transparent
+    }
+    basicauth / omniscient cWaXoxDavhtaqZ9a7RtdpDWvY5rZtA
+    tls thaumxyz@gmail.com
+}

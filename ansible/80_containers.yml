@@ -12,6 +12,9 @@
       dest: "/srv/config/{{ item | basename }}"
     with_fileglob:
       - "files/{{ inventory_hostname }}/*"
+  - name: Install docker-py
+    apt:
+      name: python3-docker
 
 - hosts: docker
   become: true

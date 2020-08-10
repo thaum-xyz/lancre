@@ -6,40 +6,10 @@ rpi_bt: true
 rpi_swap_size: 400
 
 system_healthcheck_url: "https://hc-ping.com/4a065773-d34c-4e78-b9cb-54f4de85bac6"
-kiosk_url: "http://127.0.0.1:8123"
+kiosk_url: "http://192.168.20.4:8123"
 kiosk_delay: 10
 kiosk_browser_params:
   - "--disable-infobars"
   - "--kiosk"
   - "--disk-cache-dir=/dev/null"
   - "--disk-cache-size=1"
-
-containers:
-  - name: homeassistant
-    image: homeassistant/raspberrypi3-homeassistant:0.113.3
-    network_mode: "host"
-    volumes:
-      - "/srv/homeassistant/config:/config"
-      - "/srv/homeassistant/db:/db"
-    env:
-      TZ: Europe/Warsaw
-  - name: mosquitto
-    image: eclipse-mosquitto:1.6
-    network_mode: "host"
-    volumes:
-      - /srv/mosquitto:/mosquitto/data
-      - /etc/localtime:/etc/localtime:ro
-  - name: mqttlogger
-    image: eclipse-mosquitto:1.6
-    network_mode: "host"
-    entrypoint: "/usr/bin/mosquitto_sub"
-    command: '-h localhost -F "%I: %t: %p" -t #'
-    volumes:
-      - /srv/mosquitto:/mosquitto/data
-      - /etc/localtime:/etc/localtime:ro
-  - name: caddy
-    image: hectormolinero/caddy
-    network_mode: "host"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /srv/config/Caddyfile:/etc/caddy/Caddyfile:ro

@@ -32,18 +32,11 @@
       name: "input devices data"
       minute: "*/5"
       job: "/usr/local/bin/devices.sh"
-  - name: Power off device when touchscreen is not registered
+  - name: Reboot device when touchscreen is not registered
     cron:
       cron_file: "/etc/crontab"
       user: root
-      name: "poweroff when no touchscreen"
+      name: "reboot when no touchscreen"
       special_time: "reboot"
-      job: "sleep 12m && test -f '/sys/devices/platform/soc/soc:firmware/soc:firmware:touchscreen/input/input0/power/control' || poweroff"
+      job: "sleep 12m && test -f '/sys/devices/platform/soc/soc:firmware/soc:firmware:touchscreen/input/input0/power/control' || reboot"
 
-
-# TODO: add application which will watch prometheus metrics (touchscreen and up()) and powercycle HMI PoE when both are != 1
-#- name: powercycle HMI when OFF
-#  hosts: controller
-#  become: true
-#  tasks:
- 

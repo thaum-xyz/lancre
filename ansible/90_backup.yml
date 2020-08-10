@@ -1,14 +1,14 @@
 ---
 - name: backups
-  hosts: hmi
+  hosts: home
   become: true
   tasks:
   - name: Create backup cronjob for homeassistant
     cron:
       cron_file: /etc/crontab
       name: homeassistant-backup
-      hour: 2
-      minute: 13
+      hour: "2"
+      minute: "13"
       user: root
       job: >
         docker pull quay.io/paulfantom/restic-mysql && 
@@ -18,7 +18,7 @@
         -e RESTIC_PASSWORD="xVaSBu92EtQuFHkQMC8yyu5GTWFJX3" 
         -e RESTIC_REPOSITORY="b2:hmi-lancre-thaum-xyz:/homeassistant" 
         -e DATA_DIRECTORY=/config 
-        -e INSTANCE=hmi
+        -e INSTANCE=home
         -e NAMESPACE=lancre
         -e PUSHGATEWAY_URL="http://garaz:9091" 
         -e MAX_AGE="691200" 

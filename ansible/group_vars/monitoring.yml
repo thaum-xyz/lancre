@@ -2,8 +2,8 @@
 prometheus_web_external_url: "https://lancre.thaum.xyz"
 prometheus_storage_retention: "7d"
 prometheus_global:
-  scrape_interval: 30s
-  scrape_timeout: 10s
+  scrape_interval: 10s
+  scrape_timeout: 5s
   evaluation_interval: 5s
 prometheus_external_labels:
   environment: lancre.thaum.xyz
@@ -21,25 +21,26 @@ prometheus_alert_rules:
 
 prometheus_scrape_configs:
   - job_name: prometheus
+    scrape_interval: 30s
     static_configs:
       - targets:
           - garaz:9090
   - job_name: 'pushgateway'
+    scrape_interval: 30s
     static_configs:
       - targets:
           - 'localhost:9091'
   - job_name: 'node'
+    scrape_interval: 30s
     static_configs:
       - targets:
           - 'hmi:9100'
-          - 'unipi:9100'
+          - 'home:9100'
           - 'garaz:9100'
-          # - 'controller:9100'
   - job_name: 'evok'
-    scrape_interval: 10s
     static_configs:
       - targets:
-          - 'unipi:7979'
+          - 'home:7979'
     metric_relabel_configs:
       - source_labels: ['circuit']
         target_label: 'circuit'
@@ -77,19 +78,18 @@ prometheus_scrape_configs:
 #    scrape_interval: 5s
 #    static_configs:
 #      - targets:
-#          - 'unipi:7000'
+#          - 'home:7000'
 #  - job_name: solar
 #    scrape_interval: 5s
 #    static_configs:
 #      - targets:
-#          - 'unipi:7001'
+#          - 'home:7001'
 #  - job_name: heater
-#    scrape_interval: 10s
 #    static_configs:
 #      - targets:
-#          - 'unipi:7002'
+#          - 'home:7002'
   - job_name: circulation
     scrape_interval: 5s
     static_configs:
       - targets:
-          - 'unipi:7003'
+          - 'home:7003'

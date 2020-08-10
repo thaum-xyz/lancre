@@ -16,9 +16,23 @@ rpi_config_params: |
   dtparam=act_led_trigger=heartbeat
   #dtparam=pwr_led_trigger=heartbeat
 
-docker_version: 5:19.03.12~3-0~raspbian-stretch
+# docker_version: 5:19.03.12~3-0~raspbian-stretch
 
 containers:
+  - name: homeassistant
+    image: homeassistant/raspberrypi3-homeassistant:0.113.3
+    network_mode: "host"
+    volumes:
+      - "/srv/homeassistant/config:/config"
+      - "/srv/homeassistant/db:/db"
+    env:
+      TZ: Europe/Warsaw
+  - name: caddy
+    image: hectormolinero/caddy
+    network_mode: "host"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /srv/config/Caddyfile:/etc/caddy/Caddyfile:ro
   - name: mosquitto
     image: eclipse-mosquitto:1.6
     network_mode: host
@@ -34,7 +48,8 @@ containers:
     volumes:
       - /etc/localtime:/etc/localtime:ro
   - name: bridge
-    image: automatedhome/evok-mqtt-bridge:0.0.2
+    # image: automatedhome/evok-mqtt-bridge:0.0.2
+    image: automatedhome/evok-mqtt-bridge:latest  # added syncing analog inputs every 5s
     network_mode: host
     volumes:
       - /etc/localtime:/etc/localtime:ro
