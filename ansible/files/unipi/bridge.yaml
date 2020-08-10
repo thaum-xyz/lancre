@@ -3,10 +3,10 @@ sync_interval: 5
 mappings:
   - device: "temp"
     circuit: "28FF0A9171150270"
-    topic: "solar/temperature/in"
+    topic: "solar/temperature/out"
   - device: "temp"
     circuit: "28FF1A181515019F"
-    topic: "solar/temperature/out"
+    topic: "solar/temperature/in"
   - device: "temp"
     circuit: "28FF4C30041503A7"
     topic: "tank/temperature/up"

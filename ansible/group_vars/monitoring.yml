@@ -64,11 +64,11 @@ prometheus_scrape_configs:
       - source_labels: ['circuit']
         target_label: 'circuit'
         regex: '28FF1A181515019F'
-        replacement: 'solar-out'
+        replacement: 'solar-in'
       - source_labels: ['circuit']
         target_label: 'circuit'
         regex: '28FF0A9171150270'
-        replacement: 'solar-in'
+        replacement: 'solar-out'
       - source_labels: ['circuit']
         target_label: 'circuit'
         regex: '28FF'  # TODO: Fill-in when new sensor gets connected
