@@ -73,18 +73,23 @@ prometheus_scrape_configs:
         target_label: 'circuit'
         regex: '28FF'  # TODO: Fill-in when new sensor gets connected
         replacement: 'sauna'
-  - job_name: flow-meter
+#  - job_name: flow-meter
+#    scrape_interval: 5s
+#    static_configs:
+#      - targets:
+#          - 'unipi:7000'
+#  - job_name: solar
+#    scrape_interval: 5s
+#    static_configs:
+#      - targets:
+#          - 'unipi:7001'
+#  - job_name: heater
+#    scrape_interval: 10s
+#    static_configs:
+#      - targets:
+#          - 'unipi:7002'
+  - job_name: circulation
     scrape_interval: 5s
     static_configs:
       - targets:
-          - 'unipi:7000'
-  - job_name: solar
-    scrape_interval: 5s
-    static_configs:
-      - targets:
-          - 'unipi:7001'
-  - job_name: heater
-    scrape_interval: 10s
-    static_configs:
-      - targets:
-          - 'unipi:7002'
+          - 'unipi:7003'
