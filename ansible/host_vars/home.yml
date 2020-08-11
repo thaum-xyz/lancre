@@ -5,6 +5,8 @@ locales_present:
 locales_default:
   lang: en_US.UTF-8
 
+healthcheck_url: "https://hc-ping.com/ae7a9910-234a-4551-b8ff-1a518642ce1b"
+
 system_earlyoom_enabled: false
 rpi_swap_size: 100
 rpi_config_params: |
@@ -19,6 +21,18 @@ rpi_config_params: |
 # docker_version: 5:19.03.12~3-0~raspbian-stretch
 
 containers:
+  - name: prometheus
+    image: quay.io/prometheus/prometheus:v2.20.1
+    network_mode: "host"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    volumes:
+      - "/srv/config/prometheus.yaml:/etc/prometheus/prometheus.yml:ro"
+      - "/srv/prometheus:/prometheus"
+  - name: pushgateway
+    network_mode: "host"
+    image: quay.io/prometheus/pushgateway:v1.2.0
   - name: homeassistant
     image: homeassistant/raspberrypi3-homeassistant:0.113.3
     network_mode: "host"

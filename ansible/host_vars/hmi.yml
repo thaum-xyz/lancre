@@ -5,7 +5,8 @@ rpi_gpu_mem: 128
 rpi_bt: true
 rpi_swap_size: 400
 
-system_healthcheck_url: "https://hc-ping.com/4a065773-d34c-4e78-b9cb-54f4de85bac6"
+healthcheck_url: "https://hc-ping.com/4a065773-d34c-4e78-b9cb-54f4de85bac6"
+
 kiosk_url: "http://192.168.20.4:8123"
 kiosk_delay: 10
 kiosk_browser_params:
