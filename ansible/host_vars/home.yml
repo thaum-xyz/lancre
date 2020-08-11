@@ -29,6 +29,7 @@ containers:
       - '--storage.tsdb.path=/prometheus'
     volumes:
       - "/srv/config/prometheus.yaml:/etc/prometheus/prometheus.yml:ro"
+      - "/srv/config/prometheus-rules.yaml:/etc/prometheus/rules.yml:ro"
       - "/srv/prometheus:/prometheus"
   - name: pushgateway
     network_mode: "host"
