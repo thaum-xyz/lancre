@@ -61,6 +61,17 @@ scrape_configs:
     static_configs:
     - targets:
       - localhost:7979
+  - job_name: solar
+    scrape_interval: 5s
+    static_configs:
+    - targets:
+      - localhost:7000
+      - localhost:7001
+  - job_name: heater
+    scrape_interval: 5s
+    static_configs:
+    - targets:
+      - localhost:7002
   - job_name: circulation
     scrape_interval: 5s
     static_configs:

@@ -63,7 +63,7 @@ containers:
       - /etc/localtime:/etc/localtime:ro
   - name: bridge
     # image: automatedhome/evok-mqtt-bridge:0.0.2
-    image: automatedhome/evok-mqtt-bridge:latest  # added syncing analog inputs every 5s
+    image: automatedhome/evok-mqtt-bridge:latest
     network_mode: host
     volumes:
       - /etc/localtime:/etc/localtime:ro
@@ -79,8 +79,8 @@ containers:
 
   # SENSORS
   - name: flow-meter
-    image: automatedhome/flow-meter:0.0.2
-    # image: automatedhome/flow-meter:latest  # including basic prometheus metrics
+    # image: automatedhome/flow-meter:0.0.2
+    image: automatedhome/flow-meter:latest  # including basic prometheus metrics
     network_mode: host
     command:
       - "-outTopic"
@@ -112,8 +112,8 @@ containers:
     volumes:
       - /etc/localtime:/etc/localtime:ro
   - name: solar
-    image: automatedhome/solar:0.0.3
-    # image: automatedhome/solar:latest  # added prometheus metrics
+    # image: automatedhome/solar:0.0.3
+    image: automatedhome/solar:latest  # added prometheus metrics
     network_mode: host
     # command:
     #   - "--invert"
@@ -121,8 +121,8 @@ containers:
       - /etc/localtime:/etc/localtime:ro
       - /srv/config/solar.yaml:/config.yaml:ro
   - name: heater
-    image: automatedhome/heater:0.0.2
-    # image: automatedhome/heater:latest  # added prometheus metrics
+    # image: automatedhome/heater:0.0.2
+    image: automatedhome/heater:latest  # added prometheus metrics
     network_mode: host
     volumes:
       - /etc/localtime:/etc/localtime:ro
