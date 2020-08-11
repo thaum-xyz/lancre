@@ -8,15 +8,11 @@
   - cloudalchemy.node-exporter
   - paulfantom.system
   - paulfantom.raspberry
-
-- name: healthcheck
-  hosts: all
-  become: true
   tasks:
   - name: Healthcheck ping
     cron:
       name: healthcheck
-      cron_file: /etc/ctontab
+      cron_file: /etc/crontab
       user: 'pi'
       minute: '*/5'
       job: "curl -fsS -m 10 --retry 5 -o /dev/null {{ healthcheck_url }}"

@@ -1,6 +1,0 @@
----
-- hosts: monitoring
-  become: true
-  roles:
-  - cloudalchemy.prometheus
-  - cloudalchemy.pushgateway

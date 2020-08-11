@@ -20,7 +20,7 @@
         -e DATA_DIRECTORY=/config 
         -e INSTANCE=home
         -e NAMESPACE=lancre
-        -e PUSHGATEWAY_URL="http://garaz:9091" 
+        -e PUSHGATEWAY_URL="http://home:9091" 
         -e MAX_AGE="691200" 
         -v /srv/homeassistant/config:/config:ro
         --name restic

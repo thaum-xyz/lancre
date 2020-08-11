@@ -10,6 +10,9 @@ healthcheck_url: "https://hc-ping.com/4a065773-d34c-4e78-b9cb-54f4de85bac6"
 kiosk_url: "http://192.168.20.4:8123"
 kiosk_delay: 10
 kiosk_browser_params:
+  - "--no-default-browser-check"
+  - "--no-first-run"
+  - "--disable-session-crashed-bubble"
   - "--disable-infobars"
   - "--kiosk"
   - "--disk-cache-dir=/dev/null"

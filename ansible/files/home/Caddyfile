@@ -12,7 +12,7 @@ zmc.krupa.net.pl {
 }
 lancre.thaum.xyz {
     # prometheus 0.0.0.0:9180
-    proxy / 192.168.20.45:9090 {
+    proxy / 127.0.0.1:9090 {
         transparent
     }
     basicauth / omniscient cWaXoxDavhtaqZ9a7RtdpDWvY5rZtA

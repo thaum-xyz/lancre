@@ -1,7 +1,5 @@
 ---
 - name: cloudalchemy.node-exporter
-- name: cloudalchemy.prometheus
-- name: cloudalchemy.pushgateway
 - name: paulfantom.kiosk
 - name: paulfantom.raspberry
 - name: paulfantom.system
