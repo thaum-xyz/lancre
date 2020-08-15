@@ -1,0 +1,28 @@
+.:53 {
+  ready
+  prometheus :9153
+  hosts {
+    192.168.20.1 router
+    192.168.20.2 unifi
+    192.168.20.3 hmi
+    192.168.20.4 home
+    192.168.20.42 camera
+    fallthrough
+  }
+  ads {
+    https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+    https://mirror1.malwaredomains.com/files/justdomains
+    http://sysctl.org/cameleon/hosts
+    https://zeustracker.abuse.ch/blocklist.php?download=domainblocklist
+    https://s3.amazonaws.com/lists.disconnect.me/simple_tracking.txt
+    https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt
+  }
+  cache
+  forward . 192.168.20.1 1.1.1.1 {
+    health_check 5s
+  }
+  reload
+  loadbalance
+  # log
+  errors
+}

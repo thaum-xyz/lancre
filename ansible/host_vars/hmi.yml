@@ -17,3 +17,4 @@ kiosk_browser_params:
   - "--kiosk"
   - "--disk-cache-dir=/dev/null"
   - "--disk-cache-size=1"
+  - "--check-for-update-interval=604800"
