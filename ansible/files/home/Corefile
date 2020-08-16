@@ -10,6 +10,7 @@
     fallthrough
   }
   ads {
+    https://gist.githubusercontent.com/paulfantom/03f6367728381a7ccf53fc7612b1575d/raw/adblocklist
     https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
     https://mirror1.malwaredomains.com/files/justdomains
     http://sysctl.org/cameleon/hosts
