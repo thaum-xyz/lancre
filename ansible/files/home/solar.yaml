@@ -22,7 +22,7 @@ settings:
     value: 8
   solarOff:
     address: "solar/settings/off"
-    value: 5
+    value: 4
   tankMax:
     address: "solar/settings/tank"
     value: 65
