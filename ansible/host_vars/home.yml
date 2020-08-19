@@ -112,8 +112,17 @@ containers:
       - /srv/config/thermostat.yaml:/config.yaml:ro
 
   # CONTROLLERS
+  - name: newscheduler
+    image: automatedhome/scheduler
+    network_mode: host
+    command:
+      - "-token=VdBTUAakzktLzsYz8nas9JT3hRg8Y7"
+      - "-config=/config.yaml"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /srv/config/schedule.yaml:/config.yaml:ro
   - name: scheduler
-    image: automatedhome/scheduler:0.0.3
+    image: automatedhome/scheduler:0.0.4
     network_mode: host
     command:
       - "-topic=thermostat/schedule"
