@@ -82,7 +82,7 @@ prometheus_scrape_configs:
         replacement: 'solar-out'
       - source_labels: ['circuit']
         target_label: 'circuit'
-        regex: '28FF'  # TODO: Fill-in when new sensor gets connected
+        regex: '28FF55555019012D'
         replacement: 'sauna'
 #  - job_name: flow-meter
 #    scrape_interval: 5s

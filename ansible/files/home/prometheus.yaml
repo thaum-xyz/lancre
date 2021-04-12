@@ -59,7 +59,7 @@ scrape_configs:
       replacement: solar-out
       source_labels: [ 'circuit' ]
       target_label: circuit
-    - regex: 28FF
+    - regex: 28FF55555019012D
       replacement: sauna
       source_labels: [ 'circuit' ]
       target_label: circuit
@@ -72,11 +72,11 @@ scrape_configs:
     - targets:
       - localhost:7000
       - localhost:7001
-  - job_name: heater
+  - job_name: thermostat
     scrape_interval: 2s
     static_configs:
     - targets:
-      - localhost:7002
+      - localhost:7009
   - job_name: circulation
     scrape_interval: 2s
     static_configs:
