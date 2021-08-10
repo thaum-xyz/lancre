@@ -1,8 +1,8 @@
 zmc.krupa.net.pl {
     # prometheus 0.0.0.0:9180
-    proxy /unipi/scheduler 127.0.0.1:3000 {
+    proxy /thermostat/schedule 127.0.0.1:7009 {
         transparent
-        without /unipi/scheduler
+        without /thermostat
     }
     proxy / 127.0.0.1:8123 {
         websocket

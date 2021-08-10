@@ -1,14 +1,20 @@
 ---
 schedule:
-  default: 18
+  default: 17.1
   workday:
     - from: "14:00"
+      to: "20:00"
+      temperature: 20
+    - from: "20:00"
       to: "21:00"
-      temperature: 22.2
+      temperature: 20
   freeday:
     - from: "07:00"
+      to: "20:00"
+      temperature: 20
+    - from: "20:00"
       to: "22:00"
-      temperature: 22.5
+      temperature: 20
 
 # mode:
 #   holiday: false

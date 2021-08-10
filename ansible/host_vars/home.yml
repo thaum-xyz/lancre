@@ -56,7 +56,7 @@ containers:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /srv/config/Corefile:/etc/coredns/Corefile:ro
-  - name: mosquitto
+  - name: mosquitto  # TODO: remove after
     image: eclipse-mosquitto:1.6
     network_mode: host
     volumes:
@@ -84,18 +84,17 @@ containers:
       - "http://localhost:8080/json/all"
       - "/config.yaml"
     volumes:
-      - /srv/config/json-exporter.yaml:/config.yaml:ro
+      - /srv/config/evok-exporter.yaml:/config.yaml:ro
 
   # SENSORS
   - name: flow-meter
     # image: automatedhome/flow-meter:0.0.2
-    image: automatedhome/flow-meter:latest  # including basic prometheus metrics
+    image: automatedhome/flow-meter:latest
     network_mode: host
     command:
-      - "-outTopic"
-      - "solar/flow/rate"
-      - "-litersPerRotation"
-      - "0.1"
+      - "--evok-address=ws://localhost:8080/ws"
+      - "--evok-circuit=6"
+      - "--liters-per-rotation=0.1"
     volumes:
       - /etc/localtime:/etc/localtime:ro
   - name: analog-in
@@ -103,17 +102,10 @@ containers:
     network_mode: host
     volumes:
       - /etc/localtime:/etc/localtime:ro
-  - name: thermostat
-    image: automatedhome/thermostat:0.0.3
-    network_mode: host
-    command: ["-clientid", "thermostat"]
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /srv/config/thermostat.yaml:/config.yaml:ro
 
   # CONTROLLERS
-  - name: newscheduler
-    image: automatedhome/scheduler
+  - name: thermostat
+    image: automatedhome/scheduler:latest
     network_mode: host
     command:
       - "-token=VdBTUAakzktLzsYz8nas9JT3hRg8Y7"
@@ -121,14 +113,6 @@ containers:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /srv/config/schedule.yaml:/config.yaml:ro
-  - name: scheduler
-    image: automatedhome/scheduler:0.0.4
-    network_mode: host
-    command:
-      - "-topic=thermostat/schedule"
-      - "-token=VdBTUAakzktLzsYz8nas9JT3hRg8Y7"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
   - name: solar
     # image: automatedhome/solar:0.0.3
     image: automatedhome/solar:latest  # added prometheus metrics
@@ -138,17 +122,14 @@ containers:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /srv/config/solar.yaml:/config.yaml:ro
-  - name: heater
-    # image: automatedhome/heater:0.0.2
-    image: automatedhome/heater:latest  # added prometheus metrics
-    network_mode: host
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /srv/config/heater.yaml:/config.yaml:ro
   - name: circulation
-    # image: automatedhome/circulation:0.0.1
-    image: automatedhome/circulation:latest  # added prometheus metrics
+    image: automatedhome/circulation:latest
     network_mode: host
-    command: ["-inTopic", "evok/input/5/value", "-outTopic", "evok/relay/4/set"]
+    command: 
+      - "--evok-api-address=localhost:8080"
+      - "--evok-circuit=5"
+      - "--evok-relay=4"
+      - "--duration=12"
+      - "--interval=60"
     volumes:
       - /etc/localtime:/etc/localtime:ro
