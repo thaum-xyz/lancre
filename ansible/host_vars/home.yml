@@ -37,6 +37,7 @@ containers:
   - name: homeassistant
     image: homeassistant/raspberrypi3-homeassistant:2021.8.5
     network_mode: "host"
+    privileged: true
     volumes:
       - "/srv/homeassistant/config:/config"
       - "/srv/homeassistant/db:/db"
@@ -48,14 +49,14 @@ containers:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /srv/config/Caddyfile:/etc/caddy/Caddyfile:ro
-  - name: adblocker
-    image: quay.io/paulfantom/coredns-ads
-    network_mode: host
-    command:
-      - '-conf=/etc/coredns/Corefile'
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /srv/config/Corefile:/etc/coredns/Corefile:ro
+  #- name: adblocker
+    #image: quay.io/paulfantom/coredns-ads
+    #network_mode: host
+    #command:
+      #- '-conf=/etc/coredns/Corefile'
+    #volumes:
+      #- /etc/localtime:/etc/localtime:ro
+      #- /srv/config/Corefile:/etc/coredns/Corefile:ro
   - name: mosquitto  # TODO: remove after
     image: eclipse-mosquitto:1.6
     network_mode: host
@@ -105,9 +106,10 @@ containers:
 
   # CONTROLLERS
   - name: thermostat
-    image: automatedhome/scheduler:latest
+    image: automatedhome/scheduler:old
     network_mode: host
     command:
+      - "-template=/usr/share/site.tmpl"
       - "-token=VdBTUAakzktLzsYz8nas9JT3hRg8Y7"
       - "-config=/config.yaml"
     volumes:
