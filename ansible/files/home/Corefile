@@ -7,23 +7,39 @@
     192.168.20.3 hmi
     192.168.20.4 home
     192.168.20.42 camera
+    192.168.20.45 garaz
     fallthrough
   }
-  ads {
-    https://gist.githubusercontent.com/paulfantom/03f6367728381a7ccf53fc7612b1575d/raw/adblocklist
-    https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
-    https://mirror1.malwaredomains.com/files/justdomains
-    http://sysctl.org/cameleon/hosts
-    https://zeustracker.abuse.ch/blocklist.php?download=domainblocklist
-    https://s3.amazonaws.com/lists.disconnect.me/simple_tracking.txt
-    https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt
-  }
+  #ads {
+  #  https://gist.githubusercontent.com/paulfantom/03f6367728381a7ccf53fc7612b1575d/raw/adblocklist
+  #  https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts
+  #  https://mirror1.malwaredomains.com/files/justdomains
+  #  http://sysctl.org/cameleon/hosts
+  #  https://zeustracker.abuse.ch/blocklist.php?download=domainblocklist
+  #  https://s3.amazonaws.com/lists.disconnect.me/simple_tracking.txt
+  #  https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt
+  #}
   cache
-  forward . 192.168.20.1 1.1.1.1 {
-    health_check 5s
-  }
   reload
   loadbalance
   # log
   errors
+  forward . 127.0.0.1:5301 127.0.0.1:5302
 }
+
+.:5301 {
+  prometheus :9153
+  forward . tls://45.90.28.11 {
+    tls_servername af3317.dns1.nextdns.io
+    health_check 5s
+  }
+}
+
+.:5302 {
+  prometheus :9153
+  forward . tls://45.90.30.11 {
+    tls_servername af3317.dns2.nextdns.io
+    health_check 5s
+  }
+}
+
