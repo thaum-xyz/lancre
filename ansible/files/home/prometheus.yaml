@@ -43,6 +43,12 @@ scrape_configs:
       - localhost:9091
       labels:
         namespace: monitoring
+  - job_name: cloudflared
+    static_configs:
+    - targets:
+      - localhost:8099
+      labels:
+        namespace: tunnel
   - job_name: coredns
     static_configs:
     - targets:
