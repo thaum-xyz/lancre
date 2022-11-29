@@ -13,33 +13,18 @@ rule_files:
 remote_write:
 - url: https://prometheus-us-central1.grafana.net/api/prom/push
   basic_auth:
-    username: 24900
+    username: "24900"
     password: eyJrIjoiMzliZTQwZmQ5MGEwNzkzNzdlMzUxZmYzMzBhZTk0NmU2ZjBjOTg2NyIsIm4iOiJsYW5jcmUiLCJpZCI6NDU0ODQ1fQ==
   write_relabel_configs:
   - source_labels:
     - job
     regex: "node-exporter"
     action: drop
-    #- name: ankhmorpork-primary
-    #  url: https://push.ankhmorpork.thaum.xyz/primary/api/v1/write
-    #  basic_auth:
-    #    username: stibbons
-    #    password: 'tYLNK&8ixMM7gEXj%#2J9U'
-    #  write_relabel_configs:
-    #  - source_labels:
-    #    - job
-    #    regex: "node-exporter"
-    #    action: drop
-    #- name: ankhmorpork-secondary
-    #  url: https://push.ankhmorpork.thaum.xyz/secondary/api/v1/write
-    #  basic_auth:
-    #    username: stibbons
-    #    password: 'tYLNK&8ixMM7gEXj%#2J9U'
-    #  write_relabel_configs:
-    #  - source_labels:
-    #    - job
-    #    regex: "node-exporter"
-    #    action: drop
+- name: ankhmorpork
+  url: https://metrics.datalake.ankhmorpork.thaum.xyz/api/v1/receive
+  basic_auth:
+    username: stibbons
+    password: 'tYLNK&8ixMM7gEXj%#2J9U'
 
 scrape_configs:
   - job_name: prometheus
@@ -93,35 +78,43 @@ scrape_configs:
   - job_name: evok
     scrape_interval: 1s
     metric_relabel_configs:
-    - regex: 28FF89DB06000034
+    #- regex: 28FF89DB06000034
+    - regex: 28FF89DB060000
       replacement: climate-inside
       source_labels: [ 'circuit' ]
       target_label: circuit
-    - regex: 287CECBF060000DA
+    #- regex: 287CECBF060000DA
+    - regex: 287CECBF060000
       replacement: climate-outside
       source_labels: [ 'circuit' ]
       target_label: circuit
-    - regex: 28FF5AF502150270
+    #- regex: 28FF5AF502150270
+    - regex: 28FF5AF5021502
       replacement: heater-in
       source_labels: [ 'circuit' ]
       target_label: circuit
-    - regex: 28FF4D15151501C6
+    #- regex: 28FF4D15151501C6
+    - regex: 28FF4D15151501
       replacement: heater-out
       source_labels: [ 'circuit' ]
       target_label: circuit
-    - regex: 28FF4C30041503A7
+    #- regex: 28FF4C30041503A7
+    - regex: 28FF4C30041503
       replacement: tank
       source_labels: [ 'circuit' ]
       target_label: circuit
-    - regex: 28FF1A181515019F
+    #- regex: 28FF1A181515019F
+    - regex: 28FF1A18151501
       replacement: solar-in
       source_labels: [ 'circuit' ]
       target_label: circuit
-    - regex: 28FF0A9171150270
+    #- regex: 28FF0A9171150270
+    - regex: 28FF0A91711502
       replacement: solar-out
       source_labels: [ 'circuit' ]
       target_label: circuit
-    - regex: 28FF55555019012D
+    #- regex: 28FF55555019012D
+    - regex: 28FF5555501901
       replacement: sauna
       source_labels: [ 'circuit' ]
       target_label: circuit

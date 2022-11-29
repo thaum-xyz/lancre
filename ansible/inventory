@@ -1,7 +1,7 @@
 garaz
 hmi     ansible_host=192.168.20.3
-#home    ansible_host=192.168.20.4
-home ansible_host=lancre.thaum.xyz
+home    ansible_host=192.168.20.4
+#home ansible_host=lancre.thaum.xyz
 
 [kiosk]
 garaz

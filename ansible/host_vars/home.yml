@@ -22,6 +22,7 @@ rpi_config_params: |
 
 containers:
   - name: prometheus
+    # image: quay.io/prometheus/prometheus:v2.37.3  # LTS
     image: quay.io/prometheus/prometheus:v2.28.0
     network_mode: "host"
     command:
@@ -127,7 +128,7 @@ containers:
   - name: circulation
     image: automatedhome/circulation:latest
     network_mode: host
-    command: 
+    command:
       - "--evok-api-address=localhost:8080"
       - "--evok-circuit=5"
       - "--evok-relay=4"

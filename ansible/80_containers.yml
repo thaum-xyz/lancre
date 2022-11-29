@@ -21,20 +21,22 @@
   roles:
     - geerlingguy.docker_arm
   tasks:
-  - name: Add docker image prune
-    cron:
-      name: docker prune
-      cron_file: /etc/crontab
-      user: root
-      minute: "34"
-      hour: "1"
-      weekday: "5"
-      job: "docker system prune --all --force"
+  # TODO: move to other crontab
+  #- name: Add docker image prune
+  #  cron:
+  #    name: docker prune
+  #    cron_file: /etc/crontab
+  #    user: root
+  #    minute: "34"
+  #    hour: "1"
+  #    weekday: "5"
+  #    job: "docker system prune --all --force"
   - name: download latest images
     docker_image:
       name: "{{ item.image }}"
       state: present
-      force: true
+      force_tag: true
+      source: pull
     with_items: "{{ containers }}"
   - name: create containers
     docker_container:
@@ -53,29 +55,29 @@
       privileged: "{{ item.privileged | default(omit) }}"
     with_items: "{{ containers }}"
 
-- name: backups
-  hosts: home
-  become: true
-  tasks:
-  - name: Create backup cronjob for homeassistant
-    cron:
-      cron_file: /etc/crontab
-      name: homeassistant-backup
-      hour: "2"
-      minute: "13"
-      user: root
-      job: >
-        docker pull quay.io/paulfantom/restic-mysql && 
-        docker run --rm -it 
-        -e B2_ACCOUNT_ID="001c14f02766f430000000002" 
-        -e B2_ACCOUNT_KEY="K001wIZ0wuc/YXOveKySxwYYCyCJvG0" 
-        -e RESTIC_PASSWORD="xVaSBu92EtQuFHkQMC8yyu5GTWFJX3" 
-        -e RESTIC_REPOSITORY="b2:hmi-lancre-thaum-xyz:/homeassistant" 
-        -e DATA_DIRECTORY=/config 
-        -e INSTANCE=home
-        -e NAMESPACE=lancre
-        -e PUSHGATEWAY_URL="http://home:9091" 
-        -e MAX_AGE="691200" 
-        -v /srv/homeassistant/config:/config:ro
-        --name restic
-        quay.io/paulfantom/restic-mysql
+#- name: backups
+#  hosts: home
+#  become: true
+#  tasks:
+#  - name: Create backup cronjob for homeassistant
+#    cron:
+#      cron_file: /etc/crontab
+#      name: homeassistant-backup
+#      hour: "2"
+#      minute: "13"
+#      user: root
+#      job: >
+#        docker pull quay.io/paulfantom/restic-mysql &&
+#        docker run --rm -it
+#        -e B2_ACCOUNT_ID="001c14f02766f430000000002"
+#        -e B2_ACCOUNT_KEY="K001wIZ0wuc/YXOveKySxwYYCyCJvG0"
+#        -e RESTIC_PASSWORD="xVaSBu92EtQuFHkQMC8yyu5GTWFJX3"
+#        -e RESTIC_REPOSITORY="b2:hmi-lancre-thaum-xyz:/homeassistant"
+#        -e DATA_DIRECTORY=/config
+#        -e INSTANCE=home
+#        -e NAMESPACE=lancre
+#        -e PUSHGATEWAY_URL="http://home:9091"
+#        -e MAX_AGE="691200"
+#        -v /srv/homeassistant/config:/config:ro
+#        --name restic
+#        quay.io/paulfantom/restic-mysql
