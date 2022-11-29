@@ -8,6 +8,7 @@ locales_language_packs_present:
 locales_default:
   lang: pl_PL.UTF-8
 
+node_exporter_version: "1.4.0"
 node_exporter_enabled_collectors:
   - textfile:
       directory: "/var/lib/node_exporter"
@@ -20,5 +21,3 @@ node_exporter_enabled_collectors:
 node_exporter_disabled_collectors:
   - logind
   - ntp
-
-

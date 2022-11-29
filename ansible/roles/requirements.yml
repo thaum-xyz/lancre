@@ -1,5 +1,5 @@
 ---
-- name: cloudalchemy.node-exporter
+- name: cloudalchemy.node_exporter
 - name: paulfantom.kiosk
 - name: paulfantom.raspberry
 - name: paulfantom.system
@@ -11,4 +11,3 @@
   version: 9.6.0
 - name: geerlingguy.docker_arm
   version: 4.0.0
-
