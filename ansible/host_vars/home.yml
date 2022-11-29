@@ -31,6 +31,13 @@ containers:
       - "/srv/config/prometheus.yaml:/etc/prometheus/prometheus.yml:ro"
       - "/srv/config/prometheus-rules.yaml:/etc/prometheus/rules.yml:ro"
       - "/srv/prometheus:/prometheus"
+  - name: snmp
+    network_mode: "host"
+    image: quay.io/prometheus/snmp-exporter:v0.21.0
+    privileged: true
+    volumes:
+      - "/srv/config/snmp.yaml:/etc/snmp_exporter/snmp.yaml"
+    command: --config.file=/etc/snmp_exporter/snmp.yaml
   - name: pushgateway
     network_mode: "host"
     image: quay.io/prometheus/pushgateway:v1.5.0
