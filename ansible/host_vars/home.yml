@@ -22,8 +22,7 @@ rpi_config_params: |
 
 containers:
   - name: prometheus
-    # image: quay.io/prometheus/prometheus:v2.37.3  # LTS
-    image: quay.io/prometheus/prometheus:v2.28.0
+    image: quay.io/prometheus/prometheus:v2.37.3  # LTS
     network_mode: "host"
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -34,7 +33,7 @@ containers:
       - "/srv/prometheus:/prometheus"
   - name: pushgateway
     network_mode: "host"
-    image: quay.io/prometheus/pushgateway:v1.2.0
+    image: quay.io/prometheus/pushgateway:v1.5.0
   - name: homeassistant
     image: homeassistant/raspberrypi3-homeassistant:2021.8.5
     network_mode: "host"
