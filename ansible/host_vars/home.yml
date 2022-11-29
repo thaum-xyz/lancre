@@ -50,20 +50,6 @@ containers:
       - "/srv/homeassistant/db:/db"
     env:
       TZ: Europe/Warsaw
-  - name: caddy
-    image: hectormolinero/caddy
-    network_mode: "host"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /srv/config/Caddyfile:/etc/caddy/Caddyfile:ro
-  #- name: adblocker
-    #image: quay.io/paulfantom/coredns-ads
-    #network_mode: host
-    #command:
-      #- '-conf=/etc/coredns/Corefile'
-    #volumes:
-      #- /etc/localtime:/etc/localtime:ro
-      #- /srv/config/Corefile:/etc/coredns/Corefile:ro
   - name: mosquitto  # TODO: remove after
     image: eclipse-mosquitto:1.6
     network_mode: host
