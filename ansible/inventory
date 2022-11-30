@@ -1,6 +1,8 @@
 garaz
-hmi     ansible_host=192.168.20.3
-home    ansible_host=192.168.20.4
+hmi     ansible_host=ssh-hmi.krupa.net.pl
+home    ansbile_host=ssh-home.krupa.net.pl
+#hmi     ansible_host=192.168.20.3
+#home    ansible_host=192.168.20.4
 #home ansible_host=lancre.thaum.xyz
 
 [kiosk]

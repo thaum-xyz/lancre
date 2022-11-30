@@ -47,6 +47,7 @@ scrape_configs:
     static_configs:
     - targets:
       - localhost:8099
+      - hmi:8099
       labels:
         namespace: tunnel
   - job_name: coredns
