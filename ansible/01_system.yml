@@ -5,7 +5,7 @@
   - oefenweb.locales
   - jnv.unattended-upgrades
   - dev-sec.ssh-hardening
-  - cloudalchemy.node_exporter
+  - prometheus.prometheus.node_exporter
   - paulfantom.system
   - paulfantom.raspberry
   tasks:
@@ -17,15 +17,3 @@
       minute: '*/5'
       job: "curl -fsS -m 10 --retry 5 -o /dev/null {{ healthcheck_url }}"
     when: healthcheck_url is defined
-
-#- hosts: home
-#  become: true
-#  tasks:
-#  - name: Add dynamic DNS updater
-#    cron:
-#      name: dyndns
-#      cron_file: /etc/crontab
-#      user: 'pi'
-#      minute: '*/15'
-#      # FIXME: secure secret
-#      job: 'curl -fsS --user "thaum.xyz-lancre:JPbNcG3a9UyqtzSfj2rbXjteBDcd6e" "https://www.ovh.com/nic/update?system=dyndns&hostname=lancre.thaum.xyz"'
