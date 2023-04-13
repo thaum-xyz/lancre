@@ -1,5 +1,10 @@
 ---
-- name: cloudalchemy.node_exporter
+collections:
+- name: community.docker
+- name: prometheus.prometheus
+  version: 0.3.1
+
+roles:
 - name: paulfantom.kiosk
 - name: paulfantom.raspberry
 - name: paulfantom.system

@@ -32,14 +32,14 @@
   #    weekday: "5"
   #    job: "docker system prune --all --force"
   - name: download latest images
-    docker_image:
+    community.docker.docker_image:
       name: "{{ item.image }}"
       state: present
       force_tag: true
       source: pull
     with_items: "{{ containers }}"
   - name: create containers
-    docker_container:
+    community.docker.docker_container:
       restart_policy: "unless-stopped"
       log_driver: json-file
       log_options:

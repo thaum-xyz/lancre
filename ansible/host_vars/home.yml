@@ -42,7 +42,7 @@ containers:
     network_mode: "host"
     image: quay.io/prometheus/pushgateway:v1.5.0
   - name: homeassistant
-    image: homeassistant/raspberrypi3-homeassistant:2022.11.4
+    image: homeassistant/raspberrypi3-homeassistant:2023.4.3
     network_mode: "host"
     privileged: true
     volumes:
@@ -50,7 +50,7 @@ containers:
       - "/srv/homeassistant/db:/db"
     env:
       TZ: Europe/Warsaw
-  - name: mosquitto  # TODO: remove after
+  - name: mosquitto  # TODO: remove after ???
     image: eclipse-mosquitto:1.6
     network_mode: host
     volumes:
