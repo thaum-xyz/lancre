@@ -91,23 +91,24 @@ containers:
       - "--liters-per-rotation=0.1"
     volumes:
       - /etc/localtime:/etc/localtime:ro
-  - name: analog-in
-    image: automatedhome/analog-temperature:0.0.1  # not needed after switching to prom
-    network_mode: host
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
+  #- name: analog-in
+  #  image: automatedhome/analog-temperature:0.0.3
+  #  network_mode: host
+  #  volumes:
+  #    - /etc/localtime:/etc/localtime:ro
 
   # CONTROLLERS
-  - name: thermostat
-    image: automatedhome/scheduler:old
-    network_mode: host
-    command:
-      - "-template=/usr/share/site.tmpl"
-      - "-token=VdBTUAakzktLzsYz8nas9JT3hRg8Y7"
-      - "-config=/config.yaml"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /srv/config/schedule.yaml:/config.yaml:ro
+  # # Disabled as this is handled by home assistant now
+  #- name: thermostat
+  #  image: automatedhome/scheduler:old
+  #  network_mode: host
+  #  command:
+  #    - "-template=/usr/share/site.tmpl"
+  #    - "-token=VdBTUAakzktLzsYz8nas9JT3hRg8Y7"
+  #    - "-config=/config.yaml"
+  #  volumes:
+  #    - /etc/localtime:/etc/localtime:ro
+  #    - /srv/config/schedule.yaml:/config.yaml:ro
   - name: solar
     # image: automatedhome/solar:0.0.3
     image: automatedhome/solar:latest  # added prometheus metrics
