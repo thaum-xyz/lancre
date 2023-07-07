@@ -1,6 +1,6 @@
 garaz
 hmi     ansible_host=ssh-hmi.krupa.net.pl
-home    ansbile_host=ssh-home.krupa.net.pl
+home    ansible_host=ssh-home.krupa.net.pl
 #hmi     ansible_host=192.168.20.3
 #home    ansible_host=192.168.20.4
 #home ansible_host=lancre.thaum.xyz
@@ -17,4 +17,4 @@ garaz
 
 [all:vars]
 ansible_user=pi
-ansible_python_interpreter="{{ ansible_playbook_python }}"
+ansible_python_interpreter=/usr/bin/python3

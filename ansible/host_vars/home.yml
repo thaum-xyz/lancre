@@ -61,11 +61,9 @@ containers:
 
   # SENSORS
   - name: flow-meter
-    # image: automatedhome/flow-meter:0.0.2
-    image: automatedhome/flow-meter:latest
+    image: automatedhome/flow-meter:0.1.1
     network_mode: host
     command:
-      - "--evok-address=ws://localhost:8080/ws"
       - "--evok-circuit=6"
       - "--liters-per-rotation=0.1"
     volumes:
@@ -73,8 +71,7 @@ containers:
 
   # CONTROLLERS
   - name: solar
-    # image: automatedhome/solar:0.0.3
-    image: automatedhome/solar:latest  # added prometheus metrics
+    image: automatedhome/solar:0.7.2
     network_mode: host
     command:
     - "--homeassistant-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJmODRhOWU4MWE5YWM0ZjI2OGVmMGYwOTAwYjBiOTQ3YSIsImlhdCI6MTY4ODcxMjk4NiwiZXhwIjoyMDA0MDcyOTg2fQ.ZIRfpVaOZw1AqMSyFrJiYhdCeYzymLBjCEUF3OO1rts"
