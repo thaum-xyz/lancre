@@ -50,27 +50,6 @@ containers:
       - "/srv/homeassistant/db:/db"
     env:
       TZ: Europe/Warsaw
-  - name: mosquitto  # TODO: remove after ???
-    image: eclipse-mosquitto:1.6
-    network_mode: host
-    volumes:
-      - /srv/config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
-      - /srv/mosquitto:/mosquitto/data
-      - /etc/localtime:/etc/localtime:ro
-  - name: mqtt-logger
-    image: eclipse-mosquitto:1.6
-    network_mode: host
-    entrypoint: "/usr/bin/mosquitto_sub"
-    command: '-h localhost -F "%I: %t: %p" -t #'
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-  - name: bridge
-    # image: automatedhome/evok-mqtt-bridge:0.0.2
-    image: automatedhome/evok-mqtt-bridge:latest
-    network_mode: host
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /srv/config/bridge.yaml:/config.yaml:ro
   - name: evok-exporter
     image: quay.io/prometheuscommunity/json-exporter:v0.1.0
     network_mode: host # exposed on port 7979
@@ -91,30 +70,15 @@ containers:
       - "--liters-per-rotation=0.1"
     volumes:
       - /etc/localtime:/etc/localtime:ro
-  #- name: analog-in
-  #  image: automatedhome/analog-temperature:0.0.3
-  #  network_mode: host
-  #  volumes:
-  #    - /etc/localtime:/etc/localtime:ro
 
   # CONTROLLERS
-  # # Disabled as this is handled by home assistant now
-  #- name: thermostat
-  #  image: automatedhome/scheduler:old
-  #  network_mode: host
-  #  command:
-  #    - "-template=/usr/share/site.tmpl"
-  #    - "-token=VdBTUAakzktLzsYz8nas9JT3hRg8Y7"
-  #    - "-config=/config.yaml"
-  #  volumes:
-  #    - /etc/localtime:/etc/localtime:ro
-  #    - /srv/config/schedule.yaml:/config.yaml:ro
   - name: solar
     # image: automatedhome/solar:0.0.3
     image: automatedhome/solar:latest  # added prometheus metrics
     network_mode: host
-    # command:
-    #   - "--invert"
+    command:
+    - "--homeassistant-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJmODRhOWU4MWE5YWM0ZjI2OGVmMGYwOTAwYjBiOTQ3YSIsImlhdCI6MTY4ODcxMjk4NiwiZXhwIjoyMDA0MDcyOTg2fQ.ZIRfpVaOZw1AqMSyFrJiYhdCeYzymLBjCEUF3OO1rts"
+    #  - "--invert"
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /srv/config/solar.yaml:/config.yaml:ro
