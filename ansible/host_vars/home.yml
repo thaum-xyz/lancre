@@ -61,7 +61,7 @@ containers:
 
   # SENSORS
   - name: flow-meter
-    image: automatedhome/flow-meter:0.1.1
+    image: automatedhome/flow-meter:0.1.2
     network_mode: host
     command:
       - "--evok-circuit=6"
@@ -71,11 +71,11 @@ containers:
 
   # CONTROLLERS
   - name: solar
-    image: automatedhome/solar:0.7.2
+    image: automatedhome/solar:0.8.4
     network_mode: host
     command:
     - "--homeassistant-token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJmODRhOWU4MWE5YWM0ZjI2OGVmMGYwOTAwYjBiOTQ3YSIsImlhdCI6MTY4ODcxMjk4NiwiZXhwIjoyMDA0MDcyOTg2fQ.ZIRfpVaOZw1AqMSyFrJiYhdCeYzymLBjCEUF3OO1rts"
-    #  - "--invert"
+    #- "--invert"
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /srv/config/solar.yaml:/config.yaml:ro
