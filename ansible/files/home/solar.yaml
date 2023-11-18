@@ -4,7 +4,7 @@ actuators:
   # pump: "evok/relay/3/set"
   # switch: "evok/relay/2/set"
   # flow: "evok/ao/1/set"
-  pump: 
+  pump:
     dev: "relay"
     circuit: "3"
   switch:
@@ -19,13 +19,16 @@ sensors:
     circuit: "1"
   solarIn:
     dev: "temp"
-    circuit: "28FF1A18151501"
+    circuit: "28FF1A181515019F"
+    #circuit: "28FF1A18151501"
   solarOut:
     dev: "temp"
-    circuit: "28FF0A91711502"
+    circuit: "28FF0A9171150270"
+    #circuit: "28FF0A91711502"
   tankUp:
     dev: "temp"
-    circuit: "28FF4C30041503"
+    circuit: "28FF4C30041503A7"
+    #circuit: "28FF4C30041503"
 settings:
   solarEmergency:
     entity_id: "input_boolean.solar_emergency_shutoff"
