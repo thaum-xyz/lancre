@@ -52,7 +52,7 @@ func run(path string, log *slog.Logger) error {
 	if cfg.Board == "fake" {
 		board = unipi.NewFake()
 	} else {
-		real, err := unipi.Open(log, cfg.Mode == "active")
+		real, err := unipi.Open(log, cfg.Mode == "active", cfg.InputsEnabled())
 		if err != nil {
 			return err
 		}

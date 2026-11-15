@@ -20,8 +20,9 @@ type Board struct {
 }
 
 // Open needs /dev/i2c-1 and /dev/gpiochip0. With active false (observe
-// mode) it changes nothing on the board, not even the input pull-ups.
-func Open(log *slog.Logger, active bool) (*Board, error) {
+// mode) it changes nothing on the board, not even the input pull-ups. With
+// inputs false no GPIO line is requested at all.
+func Open(log *slog.Logger, active, inputs bool) (*Board, error) {
 	if _, err := host.Init(); err != nil {
 		return nil, fmt.Errorf("periph init: %w", err)
 	}
@@ -35,6 +36,9 @@ func Open(log *slog.Logger, active bool) (*Board, error) {
 		pull = gpio.PullUp // as Evok sets it; the optocoupler pulls low
 	}
 	for i, num := range InputPins {
+		if !inputs {
+			break
+		}
 		line, err := inputLine(num)
 		if err == nil {
 			err = line.In(pull, gpio.NoEdge)

@@ -42,6 +42,7 @@ type Config struct {
 	Relays map[string]RelayRule `yaml:"relays"`
 
 	DigitalInputs struct {
+		Enabled  *bool         `yaml:"enabled"` // default: true; reading inputs changes nothing on the board
 		Debounce time.Duration `yaml:"debounce"`
 		Invert   []int         `yaml:"invert"`
 	} `yaml:"digital_inputs"`
@@ -270,6 +271,11 @@ func resolve(base rules.Rule, r RelayRule) (rules.Rule, error) {
 // chips need multi-step transactions that would collide with Evok's.
 func (c *Config) AnalogEnabled() bool  { return c.enabled(c.AnalogInputs.Enabled) }
 func (c *Config) OneWireEnabled() bool { return c.enabled(c.OneWire.Enabled) }
+
+// InputsEnabled is on unless switched off: reading GPIO lines is passive.
+func (c *Config) InputsEnabled() bool {
+	return c.DigitalInputs.Enabled == nil || *c.DigitalInputs.Enabled
+}
 
 // AnalogOutEnabled is never true in observe mode (validate rejects it).
 func (c *Config) AnalogOutEnabled() bool { return c.enabled(c.AnalogOutputs.Enabled) }

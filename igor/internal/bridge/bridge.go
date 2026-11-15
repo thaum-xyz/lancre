@@ -126,7 +126,9 @@ func (b *Bridge) Run(ctx context.Context) {
 		}()
 	}
 	loop(relayPoll, b.pollRelays)
-	loop(inputPoll, b.pollInputs)
+	if b.cfg.InputsEnabled() {
+		loop(inputPoll, b.pollInputs)
+	}
 	if b.cfg.AnalogEnabled() {
 		loop(b.cfg.AnalogInputs.Interval, b.pollAnalogs)
 	}

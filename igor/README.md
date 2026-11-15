@@ -168,6 +168,7 @@ Every push to `master` that touches `igor/` is a release built by `.github/workf
 |-------|--------|
 | Analog inputs and probes are off (the default in `observe`) | Both chips need multi-step transactions that Evok would interleave with. Relay and input reads are single transactions. Setting `enabled: true` in `observe` is allowed for a window with Evok stopped; igor logs a warning at start. |
 | No analog output | `observe` never drives an output; `analog_outputs.enabled: true` is rejected. |
+| `digital_inputs.enabled: false` in the shipped config | The observe week starts with relays only. Remove the line to add the inputs. |
 | DI 1 has no entity | The `w1-gpio` overlay holds GPIO4. It goes away with the HAOS `config.txt`. |
 
 ### Going active

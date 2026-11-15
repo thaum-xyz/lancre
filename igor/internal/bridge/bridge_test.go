@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"log/slog"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -380,5 +381,34 @@ func TestMissingPWMOverlayOnlyDropsTheOutput(t *testing.T) {
 	r.b.OnMessage("igor/relay/5/set", []byte("ON"), false)
 	if _, ok := r.wire.latest["homeassistant/number/igor/ao_1/config"]; ok || hw.outSets != 0 || !hw.relays[4] {
 		t.Fatal("want no output entity, no PWM write, relays still working")
+	}
+}
+
+// The shipped config for home is the first observe step: relays only.
+func TestHomeConfigIsRelaysOnly(t *testing.T) {
+	raw, err := os.ReadFile("../../deploy/home/config.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg, err := config.Parse(raw)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.Mode != "observe" || cfg.InputsEnabled() || cfg.AnalogEnabled() || cfg.OneWireEnabled() || cfg.AnalogOutEnabled() || len(cfg.Warnings()) != 0 {
+		t.Fatalf("home config reads more than relays: %+v", cfg)
+	}
+	hw := &board{relays: [unipi.NumRelays]bool{4: true}, outErr: errors.New("must not be read")}
+	hw.inputs[4] = unipi.Input{On: true, Available: true}
+	r := newRig(t, string(raw), hw)
+	r.b.OnConnect()
+	r.b.OnMessage("igor/relay/5/set", []byte("OFF"), false)
+	r.b.pollRelays()
+	for topic := range r.wire.latest {
+		if !strings.HasPrefix(topic, "igor/relay/") && !strings.HasPrefix(topic, "homeassistant/switch/") && topic != "igor/status" {
+			t.Errorf("unexpected topic %s", topic)
+		}
+	}
+	if hw.writes != 0 || !hw.relays[4] {
+		t.Fatalf("observe wrote to the relay chip (%d writes)", hw.writes)
 	}
 }

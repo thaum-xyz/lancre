@@ -1,5 +1,6 @@
-# igor on `home` while Evok still runs (lancre#13). Keys are explained in
-# ../../config.example.yaml.
+# igor on `home` while Evok still runs (lancre#13), first step: relays only.
+# igor reads the relay chip once a second and touches nothing else on the
+# board. Keys are explained in ../../config.example.yaml.
 mode: observe
 mqtt:
   url: tcp://mosquitto:1883
@@ -10,6 +11,8 @@ relays:
   4: {max_on: 2m}                                          # circulation pump
   6: {on_silent: "off", max_on: 3h, off_on_start: true}    # sauna IR
   7: {on_silent: "off", max_on: 3h, off_on_start: true}    # sauna Finnish
+digital_inputs:
+  enabled: false          # first step is relays only; no GPIO line is requested
 analog_inputs:
   enabled: false          # the observe default, spelled out: Evok owns the MCP3422
   1: {correction: 5.549713}   # board EEPROM 0xF0, read 2026-11-15
