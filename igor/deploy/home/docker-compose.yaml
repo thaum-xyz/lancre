@@ -5,10 +5,10 @@ services:
     image: eclipse-mosquitto:2
     restart: unless-stopped
     volumes:
-      - ./mosquitto:/mosquitto/config   # mosquitto.conf, plus passwd created at install
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - mosquitto-data:/mosquitto/data
     ports:
-      - "1883:1883"
+      - "127.0.0.1:1883:1883"   # Home Assistant only; the broker has no passwords yet
 
   igor:
     image: ghcr.io/thaum-xyz/igor:${IGOR_VERSION:?set IGOR_VERSION in .env}
@@ -17,7 +17,6 @@ services:
     devices:
       - /dev/i2c-1
       - /dev/gpiochip0
-    env_file: .env   # the broker credential for igor; see .env.example
     volumes:
       - ./config.yaml:/etc/igor/config.yaml:ro
     ports:
