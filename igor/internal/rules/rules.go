@@ -49,7 +49,7 @@ const (
 	Announce             // publish availability, discovery and every state
 	Failsafe             // a failsafe fired on Relay for Reason
 	Refused              // a command for Relay was refused for Reason
-	Drift                // the chip disagreed with us about Relay; a Write follows
+	Drift                // the chip disagreed with us about Relay in active mode
 	Silence              // silence began (On) or ended (!On)
 )
 
@@ -159,8 +159,8 @@ func (c *Controller) Command(n int, on, retained bool, now time.Time) []Effect {
 	return out
 }
 
-// Observed takes a periodic readback of the chip. In observe mode igor
-// adopts what it sees; in active mode it owns the chip and re-asserts.
+// Observed takes a periodic readback of the chip and adopts what it sees.
+// The exception keeps igor from ever leaving on a relay it believes off.
 func (c *Controller) Observed(chip [N]bool, now time.Time) []Effect {
 	var out []Effect
 	for i, on := range chip {
@@ -169,8 +169,11 @@ func (c *Controller) Observed(chip [N]bool, now time.Time) []Effect {
 			continue
 		}
 		if c.cfg.Active {
-			out = append(out, Effect{Kind: Drift, Relay: i + 1}, Effect{Kind: Write, Relay: i + 1, On: r.On})
-			continue
+			out = append(out, Effect{Kind: Drift, Relay: i + 1})
+			if on {
+				out = append(out, Effect{Kind: Write, Relay: i + 1, On: false})
+				continue
+			}
 		}
 		r.On = on
 		r.OnSince = time.Time{}

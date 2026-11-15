@@ -200,14 +200,23 @@ func TestRetainedCommandIsIgnored(t *testing.T) {
 	}
 }
 
-func TestActiveReassertsWhenChipDrifts(t *testing.T) {
+func TestActiveAdoptsARelayTheChipDropped(t *testing.T) {
 	h := newHouse(t, true, [N]bool{})
 	h.cmd(5, true)
-	e := h.c.Observed([N]bool{}, h.now) // the write was lost
-	if len(e) != 2 || e[0].Kind != Drift || e[1] != (Effect{Kind: Write, Relay: 5, On: true}) {
+	e := h.c.Observed([N]bool{}, h.now) // brown-out, or the write was lost
+	if count(e, Drift, "") != 1 || count(e, Publish, "") != 1 || count(e, Write, "") != 0 {
 		t.Fatalf("effects: %+v", e)
 	}
-	h.want("----1---")
+	h.want("--------")
+}
+
+func TestActiveSwitchesOffARelayItBelievesOff(t *testing.T) {
+	h := newHouse(t, true, [N]bool{})
+	e := h.c.Observed([N]bool{6: true}, h.now) // a failsafe write was lost
+	if len(e) != 2 || e[0].Kind != Drift || e[1] != (Effect{Kind: Write, Relay: 7, On: false}) {
+		t.Fatalf("effects: %+v", e)
+	}
+	h.want("--------")
 }
 
 func TestOffClearsLockEvenWhenAlreadyOff(t *testing.T) {

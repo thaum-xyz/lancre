@@ -190,7 +190,7 @@ func (b *Bridge) apply(effects []rules.Effect) {
 		switch e.Kind {
 		case rules.Write:
 			if err := b.board.SetRelay(e.Relay, e.On); err != nil {
-				// The next relay poll sees the mismatch and writes again.
+				// The next relay poll retries an off and reports a lost on as off.
 				b.metrics.busErrors.WithLabelValues("i2c").Inc()
 				b.log.Error("relay write failed", "relay", e.Relay, "on", e.On, "err", err)
 			}
@@ -206,7 +206,7 @@ func (b *Bridge) apply(effects []rules.Effect) {
 			b.log.Warn("command refused", "relay", e.Relay, "on", e.On, "reason", e.Reason)
 		case rules.Drift:
 			b.metrics.drift.WithLabelValues(circuit).Inc()
-			b.log.Warn("relay differs from the chip, writing again", "relay", e.Relay)
+			b.log.Warn("relay differs from the chip", "relay", e.Relay)
 		case rules.Silence:
 			if e.On {
 				b.log.Warn("Home Assistant is silent")

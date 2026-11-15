@@ -166,21 +166,47 @@ func TestConnectAnnouncesStatusDiscoveryAndStates(t *testing.T) {
 	}
 }
 
-func TestFailedWriteIsRetriedByTheNextPoll(t *testing.T) {
+func TestFailedOnWriteIsReportedNotRetried(t *testing.T) {
 	hw := &board{failSet: true}
 	r := newRig(t, live, hw)
+	r.b.OnConnect()
 	r.b.OnMessage("igor/relay/5/set", []byte("ON"), false)
-	if hw.relays[4] {
-		t.Fatal("write should have failed")
-	}
 	hw.failSet = false
 	r.b.pollRelays()
-	if !hw.relays[4] {
-		t.Fatal("relay 5 not re-asserted")
+	if hw.relays[4] || hw.writes != 1 {
+		t.Fatalf("relay 5 switched on without a command (%d writes)", hw.writes)
 	}
+	r.expect("igor/relay/5/state", "OFF")
 	if testutil.ToFloat64(r.m.drift.WithLabelValues("5")) != 1 || testutil.ToFloat64(r.m.busErrors.WithLabelValues("i2c")) != 1 {
 		t.Fatal("drift or bus error not counted")
 	}
+}
+
+func TestFailedOffWriteIsRetriedByTheNextPoll(t *testing.T) {
+	hw := &board{relays: [unipi.NumRelays]bool{4: true}}
+	r := newRig(t, live, hw)
+	r.b.OnConnect()
+	hw.failSet = true
+	r.b.OnMessage("igor/relay/5/set", []byte("OFF"), false)
+	hw.failSet = false
+	r.b.pollRelays()
+	if hw.relays[4] {
+		t.Fatal("relay 5 still on")
+	}
+	r.expect("igor/relay/5/state", "OFF")
+}
+
+func TestChipBrownOutLeavesRelaysOff(t *testing.T) {
+	hw := &board{}
+	r := newRig(t, live, hw)
+	r.b.OnConnect()
+	r.b.OnMessage("igor/relay/5/set", []byte("ON"), false)
+	hw.relays = [unipi.NumRelays]bool{} // the MCP23008 reset
+	r.b.pollRelays()
+	if hw.relays[4] || hw.writes != 1 {
+		t.Fatalf("relay 5 switched back on (%d writes)", hw.writes)
+	}
+	r.expect("igor/relay/5/state", "OFF")
 }
 
 func TestSilenceDropsValveViaPolling(t *testing.T) {

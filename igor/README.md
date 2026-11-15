@@ -181,6 +181,7 @@ Then, with Evok stopped, set `mode: active`, remove the two `enabled: false` lin
 | Limit | Effect |
 |-------|--------|
 | `max_on` counts from igor's start for a relay found on | A restart gives that relay a fresh allowance; set `off_on_start` where that matters. |
+| The relay chip resets (brown-out) or an "on" write fails | The relay stays off and is reported off; Home Assistant has to switch it on again. |
 | igor stopped or crashed | Relays stay as they were; no failsafe runs. Alert on the scrape target being down. |
 
 ## Not built yet
