@@ -1,0 +1,27 @@
+# igor and its broker on `home` (Raspbian 10, Docker 26). Home Assistant
+# runs with host networking and reaches the broker on 127.0.0.1:1883.
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    restart: unless-stopped
+    volumes:
+      - ./mosquitto:/mosquitto/config   # mosquitto.conf, plus passwd created at install
+      - mosquitto-data:/mosquitto/data
+    ports:
+      - "1883:1883"
+
+  igor:
+    image: ghcr.io/thaum-xyz/igor:${IGOR_VERSION:?set IGOR_VERSION in .env}
+    restart: unless-stopped
+    depends_on: [mosquitto]
+    devices:
+      - /dev/i2c-1
+      - /dev/gpiochip0
+    env_file: .env   # the broker credential for igor; see .env.example
+    volumes:
+      - ./config.yaml:/etc/igor/config.yaml:ro
+    ports:
+      - "9101:9101"   # /metrics for ankhmorpork Prometheus
+
+volumes:
+  mosquitto-data:

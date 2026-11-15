@@ -1,0 +1,13 @@
+# Development: fake board, active mode, short limits so failsafes are quick to see.
+mode: active
+board: fake
+mqtt:
+  url: tcp://mosquitto:1883
+silent:
+  heartbeat_timeout: 3m
+  grace: 30s
+relays:
+  1: {on_silent: "off"}
+  4: {max_on: 2m}
+  6: {on_silent: "off", max_on: 5m, off_on_start: true}
+  7: {on_silent: "off", max_on: 5m, off_on_start: true}
