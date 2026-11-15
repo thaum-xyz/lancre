@@ -26,8 +26,16 @@ igor is a connector. It holds no control logic and does not know what a relay dr
 
 | Mode | Relay chip | Commands | Failsafes |
 |------|-----------|----------|-----------|
-| `observe` | read only, follows what Evok does; input pull-ups left as found | refused and counted | not applied |
+| `observe` | read only, follows what Evok does; input pull-ups left as found; no analog output | refused and counted | not applied |
 | `active` | owned by igor; a differing chip is written again | obeyed | applied |
+
+`on_silent` per relay:
+
+| Value | When silence begins | While silent |
+|-------|---------------------|--------------|
+| `hold` | nothing | commands obeyed |
+| `"off"` | switched off | "on" refused |
+| `"on"` | switched on (`max_on` still applies, and its lock keeps the relay off) | "off" refused |
 
 The relay chip latches. Relays keep their state while igor is stopped or restarting, and igor reads them back at start.
 
@@ -40,6 +48,7 @@ Entity ids follow the terminal; set the friendly name in Home Assistant.
 | Relay 1-8 | `switch.unipi_relay_N` | attributes `locked`, `last_failsafe` |
 | DI 1-12 | `binary_sensor.unipi_di_N` | on = terminal driven; a GPIO the kernel refuses gets no entity |
 | AI 1-2 | `sensor.unipi_ai_N` | volts; unavailable 60 s after the last good reading |
+| AO 1 | `number.unipi_ao_1` | 0-10 V in 0.1 V steps; holds its value through silence and igor restarts |
 | DS18B20 | `sensor.unipi_temp_<address>` | found by bus search; unavailable 120 s after the last good reading |
 
 ## Topics
@@ -55,6 +64,8 @@ Prefix `igor`, QoS 1.
 | `igor/di/N/state` | igor → HA | `ON` / `OFF` | yes |
 | `igor/ai/N/state` | igor → HA | volts, 3 decimals | no |
 | `igor/temp/ADDRESS/state` | igor → HA | °C, 2 decimals | no |
+| `igor/ao/1/state` | igor → HA | volts, 2 decimals | yes |
+| `igor/ao/1/set` | HA → igor | volts 0-10; a retained message is ignored | never |
 | `igor/ha/heartbeat` | HA → igor | anything, once a minute | no |
 | `homeassistant/status` | HA → igor | `online` / `offline`; on `online` igor repeats discovery and every state | no |
 
@@ -68,12 +79,13 @@ Prefix `igor`, QoS 1.
 | `igor_digital_input_state_boolean` | `circuit` |
 | `igor_analog_input_volts` | `circuit` |
 | `igor_temperature_celsius` | `address` |
+| `igor_analog_output_volts` | `circuit` |
 | `igor_ha_silent`, `igor_mqtt_connected`, `igor_ha_last_heartbeat_timestamp_seconds` | - |
 | `igor_relay_locked` | `circuit` |
 | `igor_relay_failsafe_total` | `circuit`, `reason` (`max_on`, `silent`, `start`) |
 | `igor_relay_commands_refused_total` | `circuit`, `reason` (`observe`, `locked`, `silent`, `retained`) |
 | `igor_relay_drift_total` | `circuit` |
-| `igor_bus_errors_total` | `bus` (`i2c`, `onewire`) |
+| `igor_bus_errors_total` | `bus` (`i2c`, `onewire`, `pwm`) |
 | `igor_build_info` | `version`, `mode` |
 
 Comparison with Evok during observe (both must stay empty):
@@ -154,7 +166,8 @@ Checked on 2026-11-15: Docker 26.1.4 with Compose v2.27.1, ports 1883 and 9101 f
 
 | Limit | Reason |
 |-------|--------|
-| Analog inputs and probes are off (the default in `observe`) | Both chips need multi-step transactions that Evok would interleave with. Relay and input reads are single transactions. |
+| Analog inputs and probes are off (the default in `observe`) | Both chips need multi-step transactions that Evok would interleave with. Relay and input reads are single transactions. Setting `enabled: true` in `observe` is allowed for a window with Evok stopped; igor logs a warning at start. |
+| No analog output | `observe` never drives an output; `analog_outputs.enabled: true` is rejected. |
 | DI 1 has no entity | The `w1-gpio` overlay holds GPIO4. It goes away with the HAOS `config.txt`. |
 
 ### Going active
@@ -182,6 +195,7 @@ Then, with Evok stopped, set `mode: active`, remove the two `enabled: false` lin
 |-------|--------|
 | `max_on` counts from igor's start for a relay found on | A restart gives that relay a fresh allowance; set `off_on_start` where that matters. |
 | The relay chip resets (brown-out) or an "on" write fails | The relay stays off and is reported off; Home Assistant has to switch it on again. |
+| Analog output on real hardware | Untested. It needs `dtoverlay=pwm,pin=18,func=2` (absent on `home` today) and a writable `/sys/class/pwm` inside the container; without the PWM chip igor logs an error and runs with no AO entity. See [docs/research/haos-hardware-access.md](../docs/research/haos-hardware-access.md). |
 | igor stopped or crashed | Relays stay as they were; no failsafe runs. Alert on the scrape target being down. |
 
 ## Not built yet
@@ -189,4 +203,3 @@ Then, with Evok stopped, set `mode: active`, remove the two `enabled: false` lin
 | Item | Where it is tracked |
 |------|---------------------|
 | HAOS app manifest and `repository.yaml` | [lancre#15](https://github.com/thaum-xyz/lancre/issues/15) |
-| Analog output (GPIO18 PWM) | out of the first release, [lancre#5](https://github.com/thaum-xyz/lancre/issues/5) |

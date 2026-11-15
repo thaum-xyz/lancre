@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log/slog"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -22,6 +23,8 @@ type Board interface {
 	ReadInputs() [unipi.NumInputs]unipi.Input
 	ReadAnalog(ch int, correction float64) (float64, error)
 	ReadTemps() (map[string]float64, error)
+	ReadAnalogOut() (float64, error)
+	SetAnalogOut(volts float64) error
 }
 
 // Publisher sends one MQTT message at QoS 1 without blocking. Messages sent
@@ -53,6 +56,7 @@ type Bridge struct {
 	inputs  [unipi.NumInputs]debounced
 	analogs [unipi.NumAnalogs]*float64 // nil = no valid reading
 	temps   map[string]*float64        // every probe ever seen; nil = no valid reading
+	out     *float64                   // analog output volts; nil = not available
 }
 
 type debounced struct {
@@ -90,6 +94,15 @@ func newBridge(cfg config.Config, board Board, pub Publisher, metrics *Metrics, 
 	b.ctl, effects = rules.New(rc, chip, b.now())
 	b.apply(effects)
 	b.relayMetrics()
+	if cfg.AnalogOutEnabled() {
+		// Without the PWM overlay there is no output to drive: carry on without it.
+		if v, err := board.ReadAnalogOut(); err != nil {
+			log.Error("analog output unavailable", "err", err)
+		} else {
+			b.out = &v
+			metrics.analogOut.WithLabelValues("1").Set(v)
+		}
+	}
 	return b, nil
 }
 
@@ -172,6 +185,8 @@ func (b *Bridge) OnMessage(topic string, payload []byte, retained bool) {
 			b.log.Warn("Home Assistant is offline")
 			b.apply(b.ctl.HAStatus(false, now))
 		}
+	case topic == b.topics.AnalogOutSet(1):
+		b.setAnalogOut(payload, retained)
 	default:
 		n, ok := b.topics.RelayFromSet(topic)
 		p := string(payload)
@@ -181,6 +196,32 @@ func (b *Bridge) OnMessage(topic string, payload []byte, retained bool) {
 		}
 		b.apply(b.ctl.Command(n, p == hass.On, retained, now))
 	}
+}
+
+// setAnalogOut handles a voltage command for AO 1. Callers hold b.mu.
+func (b *Bridge) setAnalogOut(payload []byte, retained bool) {
+	volts, err := strconv.ParseFloat(strings.TrimSpace(string(payload)), 64)
+	switch {
+	case retained:
+		b.log.Warn("ignored retained analog output command")
+	case b.out == nil:
+		b.log.Warn("analog output command refused: the output is not enabled", "mode", b.cfg.Mode)
+	case err != nil || !(volts >= 0 && volts <= 10):
+		b.log.Warn("ignored analog output command", "payload", string(payload))
+	default:
+		if err := b.board.SetAnalogOut(volts); err != nil {
+			b.metrics.busErrors.WithLabelValues("pwm").Inc()
+			b.log.Error("analog output write failed", "volts", volts, "err", err)
+		} else {
+			b.out = &volts
+		}
+		b.publishAnalogOut()
+	}
+}
+
+func (b *Bridge) publishAnalogOut() {
+	b.pub.Publish(b.topics.AnalogOutState(1), []byte(strconv.FormatFloat(*b.out, 'f', 2, 64)), true)
+	b.metrics.analogOut.WithLabelValues("1").Set(*b.out)
 }
 
 // apply carries out the rule engine's decisions. Callers hold b.mu.
@@ -200,7 +241,7 @@ func (b *Bridge) apply(effects []rules.Effect) {
 			b.announce()
 		case rules.Failsafe:
 			b.metrics.failsafes.WithLabelValues(circuit, e.Reason).Inc()
-			b.log.Warn("failsafe switched relay off", "relay", e.Relay, "reason", e.Reason)
+			b.log.Warn("failsafe switched relay", "relay", e.Relay, "on", e.On, "reason", e.Reason)
 		case rules.Refused:
 			b.metrics.refused.WithLabelValues(circuit, e.Reason).Inc()
 			b.log.Warn("command refused", "relay", e.Relay, "on", e.On, "reason", e.Reason)
@@ -255,6 +296,10 @@ func (b *Bridge) announce() {
 				b.publishAnalog(i+1, *v)
 			}
 		}
+	}
+	if b.out != nil {
+		config(b.disc.AnalogOut(1))
+		b.publishAnalogOut()
 	}
 	for addr, v := range b.temps {
 		config(b.disc.Temp(addr, b.cfg.OneWire.Interval))

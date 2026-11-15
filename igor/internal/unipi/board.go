@@ -13,6 +13,7 @@ import (
 type Board struct {
 	*Relays
 	adc    *ADC
+	out    *AnalogOut
 	active bool
 	probes *Probes
 	inputs Inputs
@@ -28,7 +29,7 @@ func Open(log *slog.Logger, active bool) (*Board, error) {
 	if err != nil {
 		return nil, fmt.Errorf("open I2C bus 1: %w", err)
 	}
-	b := &Board{Relays: NewRelays(bus), adc: NewADC(bus), probes: NewProbes(bus), active: active}
+	b := &Board{Relays: NewRelays(bus), adc: NewADC(bus), out: NewAnalogOut(), probes: NewProbes(bus), active: active}
 	pull := gpio.PullNoChange
 	if active {
 		pull = gpio.PullUp // as Evok sets it; the optocoupler pulls low
@@ -61,3 +62,5 @@ func (b *Board) SetRelay(n int, on bool) error                    { return b.Rel
 func (b *Board) ReadInputs() [NumInputs]Input                     { return b.inputs.Read() }
 func (b *Board) ReadAnalog(ch int, corr float64) (float64, error) { return b.adc.Read(ch, corr) }
 func (b *Board) ReadTemps() (map[string]float64, error)           { return b.probes.Read() }
+func (b *Board) ReadAnalogOut() (float64, error)                  { return b.out.Read() }
+func (b *Board) SetAnalogOut(volts float64) error                 { return b.out.Set(volts) }

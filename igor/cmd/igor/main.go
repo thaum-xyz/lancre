@@ -44,6 +44,9 @@ func run(path string, log *slog.Logger) error {
 		return err
 	}
 	log.Info("starting igor", "version", version, "mode", cfg.Mode, "board", cfg.Board)
+	for _, w := range cfg.Warnings() {
+		log.Warn(w)
+	}
 
 	var board bridge.Board
 	if cfg.Board == "fake" {
@@ -86,7 +89,7 @@ func run(path string, log *slog.Logger) error {
 		SetWill(topics.Status(), hass.Offline, 1, true).
 		SetConnectionLostHandler(func(_ mqtt.Client, err error) { br.OnDisconnect(err) }).
 		SetOnConnectHandler(func(c mqtt.Client) {
-			subs := map[string]byte{topics.RelaySetAll(): 1, topics.Heartbeat(): 1, topics.HAStatus(): 1}
+			subs := map[string]byte{topics.RelaySetAll(): 1, topics.Heartbeat(): 1, topics.HAStatus(): 1, topics.AnalogOutSetAll(): 1}
 			if t := c.SubscribeMultiple(subs, onMessage); t.Wait() && t.Error() != nil {
 				// Deaf to commands and heartbeats: stay "disconnected" so the
 				// grace period runs, and force a fresh connection.

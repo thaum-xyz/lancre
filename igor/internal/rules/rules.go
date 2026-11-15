@@ -20,11 +20,20 @@ const (
 	RefusedRetained = "retained"
 )
 
+// Silent is what a relay does while Home Assistant is silent.
+type Silent int
+
+const (
+	Hold      Silent = iota // keep the state, keep obeying commands
+	SilentOff               // switch off, refuse "on"
+	SilentOn                // switch on, refuse "off"
+)
+
 // Rule is the failsafe configuration of one relay.
 type Rule struct {
-	OffOnSilent bool          // switch off when Home Assistant goes silent
-	MaxOn       time.Duration // longest continuous on-time, 0 = unlimited
-	OffOnStart  bool          // switch off when igor starts
+	OnSilent   Silent
+	MaxOn      time.Duration // longest continuous on-time, 0 = unlimited
+	OffOnStart bool          // switch off when igor starts
 }
 
 type Config struct {
@@ -47,7 +56,7 @@ const (
 	Write    Kind = iota // set relay Relay on the chip to On
 	Publish              // publish state and attributes of relay Relay
 	Announce             // publish availability, discovery and every state
-	Failsafe             // a failsafe fired on Relay for Reason
+	Failsafe             // a failsafe switched Relay to On for Reason
 	Refused              // a command for Relay was refused for Reason
 	Drift                // the chip disagreed with us about Relay in active mode
 	Silence              // silence began (On) or ended (!On)
@@ -141,7 +150,8 @@ func (c *Controller) Command(n int, on, retained bool, now time.Time) []Effect {
 		return append(out, refuse(RefusedObserve)...)
 	case on && r.Locked:
 		return append(out, refuse(RefusedLocked)...)
-	case on && c.silent && c.cfg.Rules[i].OffOnSilent:
+	case c.silent && on && c.cfg.Rules[i].OnSilent == SilentOff,
+		c.silent && !on && c.cfg.Rules[i].OnSilent == SilentOn:
 		return append(out, refuse(RefusedSilent)...)
 	}
 	if !on {
@@ -205,12 +215,19 @@ func (c *Controller) evaluate(now time.Time, out []Effect) []Effect {
 	}
 	for i := range c.relays {
 		r, rule := &c.relays[i], c.cfg.Rules[i]
-		if !r.On {
-			continue
-		}
-		if silent && rule.OffOnSilent {
+		switch {
+		case !r.On:
+			// A max_on trip during silence keeps the relay off: the lock wins.
+			if silent && rule.OnSilent == SilentOn && !r.Locked {
+				r.On, r.OnSince, r.LastFailsafe = true, now, ReasonSilent
+				out = append(out,
+					Effect{Kind: Failsafe, Relay: i + 1, On: true, Reason: ReasonSilent},
+					Effect{Kind: Write, Relay: i + 1, On: true},
+					Effect{Kind: Publish, Relay: i + 1})
+			}
+		case silent && rule.OnSilent == SilentOff:
 			out = c.failsafe(i, ReasonSilent, out)
-		} else if rule.MaxOn > 0 && now.Sub(r.OnSince) >= rule.MaxOn {
+		case rule.MaxOn > 0 && now.Sub(r.OnSince) >= rule.MaxOn:
 			out = c.failsafe(i, ReasonMaxOn, out)
 		}
 	}

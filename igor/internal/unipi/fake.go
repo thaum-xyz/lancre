@@ -12,6 +12,7 @@ import (
 type Fake struct {
 	mu     sync.Mutex
 	relays [NumRelays]bool
+	out    float64
 	start  time.Time
 }
 
@@ -29,6 +30,19 @@ func (f *Fake) SetRelay(n int, on bool) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.relays[n-1] = on
+	return nil
+}
+
+func (f *Fake) ReadAnalogOut() (float64, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return f.out, nil
+}
+
+func (f *Fake) SetAnalogOut(volts float64) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.out = min(max(volts, 0), 10)
 	return nil
 }
 

@@ -17,6 +17,9 @@ import (
 )
 
 type board struct {
+	out      float64
+	outErr   error
+	outSets  int
 	relays   [unipi.NumRelays]bool
 	writes   int
 	failSet  bool
@@ -44,6 +47,12 @@ func (b *board) ReadAnalog(int, float64) (float64, error) {
 	return b.analog, nil
 }
 func (b *board) ReadTemps() (map[string]float64, error) { return b.temps, b.tempErr }
+func (b *board) ReadAnalogOut() (float64, error)        { return b.out, b.outErr }
+func (b *board) SetAnalogOut(v float64) error {
+	b.outSets++
+	b.out = v
+	return nil
+}
 
 type wire struct {
 	sent   []string          // "topic payload" in order
@@ -331,5 +340,45 @@ func TestRetainedAndGarbageCommandsDoNothing(t *testing.T) {
 	r.b.OnMessage("igor/relay/9/set", []byte("ON"), false)
 	if hw.writes != 0 {
 		t.Fatalf("%d writes", hw.writes)
+	}
+}
+
+func TestAnalogOutput(t *testing.T) {
+	hw := &board{out: 2.5} // the kernel kept driving 2.5 V while igor was down
+	r := newRig(t, live, hw)
+	r.b.OnConnect()
+	r.expect("igor/ao/1/state", "2.50")
+	if !strings.Contains(r.wire.latest["homeassistant/number/igor/ao_1/config"], `"min":0,"max":10,"step":0.1`) {
+		t.Fatalf("number config: %s", r.wire.latest["homeassistant/number/igor/ao_1/config"])
+	}
+	r.b.OnMessage("igor/ao/1/set", []byte("7.3"), false)
+	r.expect("igor/ao/1/state", "7.30")
+	for _, bad := range []string{"11", "-0.1", "NaN", "high"} {
+		r.b.OnMessage("igor/ao/1/set", []byte(bad), false)
+	}
+	r.b.OnMessage("igor/ao/1/set", []byte("1"), true) // retained
+	if hw.out != 7.3 || hw.outSets != 1 || testutil.ToFloat64(r.m.analogOut.WithLabelValues("1")) != 7.3 {
+		t.Fatalf("out=%v sets=%d", hw.out, hw.outSets)
+	}
+}
+
+func TestAnalogOutputIsNeverDrivenInObserve(t *testing.T) {
+	hw := &board{}
+	r := newRig(t, "mode: observe\n", hw)
+	r.b.OnConnect()
+	r.b.OnMessage("igor/ao/1/set", []byte("5"), false)
+	if _, ok := r.wire.latest["homeassistant/number/igor/ao_1/config"]; ok || hw.outSets != 0 {
+		t.Fatalf("observe exposed or drove the analog output (%d writes)", hw.outSets)
+	}
+}
+
+func TestMissingPWMOverlayOnlyDropsTheOutput(t *testing.T) {
+	hw := &board{outErr: errors.New("no PWM chip")}
+	r := newRig(t, live, hw)
+	r.b.OnConnect()
+	r.b.OnMessage("igor/ao/1/set", []byte("5"), false)
+	r.b.OnMessage("igor/relay/5/set", []byte("ON"), false)
+	if _, ok := r.wire.latest["homeassistant/number/igor/ao_1/config"]; ok || hw.outSets != 0 || !hw.relays[4] {
+		t.Fatal("want no output entity, no PWM write, relays still working")
 	}
 }

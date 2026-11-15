@@ -10,9 +10,9 @@ var t0 = time.Date(2026, 11, 15, 12, 0, 0, 0, time.UTC)
 // The live rule set (lancre#7): relay 1 valve, 4 circulation, 6/7 saunas.
 func liveConfig(active bool) Config {
 	c := Config{Active: active, HeartbeatTimeout: 10 * time.Minute, Grace: 2 * time.Minute}
-	c.Rules[0] = Rule{OffOnSilent: true}
+	c.Rules[0] = Rule{OnSilent: SilentOff}
 	c.Rules[3] = Rule{MaxOn: 2 * time.Minute}
-	c.Rules[5] = Rule{OffOnSilent: true, MaxOn: 3 * time.Hour, OffOnStart: true}
+	c.Rules[5] = Rule{OnSilent: SilentOff, MaxOn: 3 * time.Hour, OffOnStart: true}
 	c.Rules[6] = c.Rules[5]
 	return c
 }
@@ -237,4 +237,42 @@ func TestHeartbeatOverridesStaleOffline(t *testing.T) {
 	h.wait(time.Minute) // heartbeats keep coming: HA is clearly alive
 	h.wait(5 * time.Minute)
 	h.want("1-------")
+}
+
+func TestOnSilentOnSwitchesOnAndRefusesOff(t *testing.T) {
+	cfg := liveConfig(true)
+	cfg.Rules[4] = Rule{OnSilent: SilentOn, MaxOn: time.Hour}
+	c, _ := New(cfg, [N]bool{}, t0)
+	c.Connected(t0)
+	now := t0.Add(10 * time.Minute) // no heartbeat ever arrived
+	e := c.Tick(now)
+	if !c.Relay(5).On || c.Relay(5).LastFailsafe != ReasonSilent || count(e, Write, "") != 1 {
+		t.Fatalf("relay 5 not switched on: %+v", e)
+	}
+	if e := c.Command(5, false, false, now); count(e, Refused, RefusedSilent) != 1 || !c.Relay(5).On {
+		t.Fatalf("off while silent: %+v", e)
+	}
+	// max_on still applies; after the trip the lock keeps it off.
+	now = now.Add(time.Hour)
+	c.Tick(now)
+	c.Tick(now.Add(time.Minute))
+	if r := c.Relay(5); r.On || !r.Locked {
+		t.Fatalf("after max_on: %+v", r)
+	}
+	// Home Assistant returns: commands work again.
+	now = now.Add(2 * time.Minute)
+	c.Heartbeat(now)
+	c.Command(5, false, false, now)
+	if e := c.Command(5, true, false, now); count(e, Write, "") != 1 || !c.Relay(5).On {
+		t.Fatalf("on after return: %+v", e)
+	}
+}
+
+func TestOnSilentOnDoesNothingInObserve(t *testing.T) {
+	cfg := liveConfig(false)
+	cfg.Rules[4] = Rule{OnSilent: SilentOn}
+	c, _ := New(cfg, [N]bool{}, t0)
+	if e := c.Tick(t0.Add(time.Hour)); count(e, Write, "") != 0 || c.Relay(5).On {
+		t.Fatalf("observe switched a relay on: %+v", e)
+	}
 }

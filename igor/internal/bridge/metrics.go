@@ -6,6 +6,7 @@ import "github.com/prometheus/client_golang/prometheus"
 // scrapeConfig/lancre/evok) so both can be compared with a plain join.
 type Metrics struct {
 	relay, input, analog, temp *prometheus.GaugeVec
+	analogOut                  *prometheus.GaugeVec
 	locked                     *prometheus.GaugeVec
 	failsafes, refused, drift  *prometheus.CounterVec
 	busErrors                  *prometheus.CounterVec
@@ -29,8 +30,9 @@ func NewMetrics(reg prometheus.Registerer, version, mode string) *Metrics {
 		input:         gauge("igor_digital_input_state_boolean", "Digital input state after debounce.", "circuit"),
 		analog:        gauge("igor_analog_input_volts", "Analog input voltage.", "circuit"),
 		temp:          gauge("igor_temperature_celsius", "DS18B20 temperature.", "address"),
+		analogOut:     gauge("igor_analog_output_volts", "Analog output voltage being driven.", "circuit"),
 		locked:        gauge("igor_relay_locked", "1 after a max_on trip until an explicit off.", "circuit"),
-		failsafes:     counter("igor_relay_failsafe_total", "Relays switched off by igor itself.", "circuit", "reason"),
+		failsafes:     counter("igor_relay_failsafe_total", "Relays switched by igor itself.", "circuit", "reason"),
 		refused:       counter("igor_relay_commands_refused_total", "Commands igor did not carry out.", "circuit", "reason"),
 		drift:         counter("igor_relay_drift_total", "Times the chip disagreed with igor in active mode.", "circuit"),
 		busErrors:     counter("igor_bus_errors_total", "Failed hardware reads and writes.", "bus"),
@@ -39,7 +41,7 @@ func NewMetrics(reg prometheus.Registerer, version, mode string) *Metrics {
 		lastHeartbeat: gauge("igor_ha_last_heartbeat_timestamp_seconds", "Last heartbeat; igor's start time before the first one.").WithLabelValues(),
 	}
 	gauge("igor_build_info", "Version and mode.", "version", "mode").WithLabelValues(version, mode).Set(1)
-	for _, bus := range []string{"i2c", "onewire"} {
+	for _, bus := range []string{"i2c", "onewire", "pwm"} {
 		m.busErrors.WithLabelValues(bus)
 	}
 	return m

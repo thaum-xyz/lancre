@@ -46,11 +46,11 @@ type Config struct {
 		Invert   []int         `yaml:"invert"`
 	} `yaml:"digital_inputs"`
 
-	AnalogInputs struct {
-		Enabled    *bool           `yaml:"enabled"` // default: true in active, false in observe
-		Interval   time.Duration   `yaml:"interval"`
-		Correction map[int]float64 `yaml:"correction"`
-	} `yaml:"analog_inputs"`
+	AnalogInputs AnalogInputs `yaml:"analog_inputs"`
+
+	AnalogOutputs struct {
+		Enabled *bool `yaml:"enabled"` // default: true in active; never in observe
+	} `yaml:"analog_outputs"`
 
 	OneWire struct {
 		Enabled  *bool         `yaml:"enabled"` // default: true in active, false in observe
@@ -58,10 +58,64 @@ type Config struct {
 	} `yaml:"onewire"`
 }
 
+// AnalogInputs mixes section settings with per-input entries keyed by the
+// input number, like the relays section.
+type AnalogInputs struct {
+	Enabled  *bool // default: true in active, false in observe
+	Interval time.Duration
+	Inputs   map[int]AnalogInput
+}
+
+type AnalogInput struct {
+	Correction float64 // input divider ratio; 0 = Evok's fallback
+}
+
+func (a *AnalogInputs) UnmarshalYAML(n *yaml.Node) error {
+	if n.Kind != yaml.MappingNode {
+		return fmt.Errorf("line %d: analog_inputs must be a mapping", n.Line)
+	}
+	for i := 0; i+1 < len(n.Content); i += 2 {
+		key, val := n.Content[i], n.Content[i+1]
+		switch key.Value {
+		case "enabled":
+			if err := val.Decode(&a.Enabled); err != nil {
+				return err
+			}
+		case "interval":
+			if err := val.Decode(&a.Interval); err != nil {
+				return err
+			}
+		case "1", "2":
+			var in AnalogInput
+			if val.Kind != yaml.MappingNode {
+				return fmt.Errorf("line %d: analog_inputs.%s must be a mapping", val.Line, key.Value)
+			}
+			for j := 0; j+1 < len(val.Content); j += 2 {
+				if val.Content[j].Value != "correction" {
+					return fmt.Errorf("line %d: field %s not found in analog_inputs.%s", val.Content[j].Line, val.Content[j].Value, key.Value)
+				}
+				if err := val.Content[j+1].Decode(&in.Correction); err != nil {
+					return err
+				}
+			}
+			if in.Correction < 0 {
+				return fmt.Errorf("line %d: analog_inputs.%s.correction must not be negative", val.Line, key.Value)
+			}
+			if a.Inputs == nil {
+				a.Inputs = map[int]AnalogInput{}
+			}
+			a.Inputs[int(key.Value[0]-'0')] = in
+		default:
+			return fmt.Errorf("line %d: field %s not found in analog_inputs (want enabled, interval, 1, 2)", key.Line, key.Value)
+		}
+	}
+	return nil
+}
+
 // RelayRule fields are pointers so that an unset field falls back to the
 // "defaults" entry.
 type RelayRule struct {
-	OnSilent   *string   `yaml:"on_silent"` // hold | off
+	OnSilent   *string   `yaml:"on_silent"` // hold | off | on
 	MaxOn      *Duration `yaml:"max_on"`    // 0 = unlimited
 	OffOnStart *bool     `yaml:"off_on_start"`
 }
@@ -149,10 +203,8 @@ func (c *Config) validate() error {
 			return fmt.Errorf("digital_inputs.invert: %d is not 1..12", n)
 		}
 	}
-	for ch := range c.AnalogInputs.Correction {
-		if ch != 1 && ch != 2 {
-			return fmt.Errorf("analog_inputs.correction: %d is not 1 or 2", ch)
-		}
+	if c.Mode == "observe" && c.AnalogOutputs.Enabled != nil && *c.AnalogOutputs.Enabled {
+		return fmt.Errorf("analog_outputs.enabled: observe mode never drives an output")
 	}
 	_, err := c.Rules()
 	return err
@@ -190,14 +242,16 @@ func (c *Config) Rules() (rules.Config, error) {
 func resolve(base rules.Rule, r RelayRule) (rules.Rule, error) {
 	if r.OnSilent != nil {
 		switch *r.OnSilent {
-		case "off":
-			base.OffOnSilent = true
 		case "hold":
-			base.OffOnSilent = false
+			base.OnSilent = rules.Hold
+		case "off":
+			base.OnSilent = rules.SilentOff
+		case "on":
+			base.OnSilent = rules.SilentOn
 		default:
-			// YAML 1.1 parsers turn a bare off into false; this one does not,
-			// but the message spells out the quoting to be safe.
-			return base, fmt.Errorf(`on_silent %q: want "hold" or "off"`, *r.OnSilent)
+			// YAML 1.1 parsers turn bare on/off into booleans; this one does
+			// not, but the message spells out the quoting to be safe.
+			return base, fmt.Errorf(`on_silent %q: want "hold", "off" or "on"`, *r.OnSilent)
 		}
 	}
 	if r.MaxOn != nil {
@@ -217,6 +271,24 @@ func resolve(base rules.Rule, r RelayRule) (rules.Rule, error) {
 func (c *Config) AnalogEnabled() bool  { return c.enabled(c.AnalogInputs.Enabled) }
 func (c *Config) OneWireEnabled() bool { return c.enabled(c.OneWire.Enabled) }
 
+// AnalogOutEnabled is never true in observe mode (validate rejects it).
+func (c *Config) AnalogOutEnabled() bool { return c.enabled(c.AnalogOutputs.Enabled) }
+
+// Warnings lists settings that are allowed but need care.
+func (c *Config) Warnings() []string {
+	var w []string
+	if c.Mode != "observe" {
+		return w
+	}
+	if c.AnalogEnabled() {
+		w = append(w, "observe mode with analog_inputs enabled: igor will drive the MCP3422; Evok must be stopped")
+	}
+	if c.OneWireEnabled() {
+		w = append(w, "observe mode with onewire enabled: igor will drive the DS2482; Evok must be stopped")
+	}
+	return w
+}
+
 func (c *Config) enabled(set *bool) bool {
 	if set != nil {
 		return *set
@@ -226,8 +298,8 @@ func (c *Config) enabled(set *bool) bool {
 
 // Correction returns the divider ratio for analog input ch.
 func (c *Config) Correction(ch int) float64 {
-	if v, ok := c.AnalogInputs.Correction[ch]; ok && v > 0 {
-		return v
+	if in, ok := c.AnalogInputs.Inputs[ch]; ok && in.Correction > 0 {
+		return in.Correction
 	}
 	return evokCorrection
 }
