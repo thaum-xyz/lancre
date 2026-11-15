@@ -134,7 +134,7 @@ Drivers run against periph's I2C and 1-Wire playback fakes; nothing needs hardwa
 Checked on 2026-11-15: Docker 26.1.4 with Compose v2.27.1, ports 1883 and 9101 free. The steps below have not been run on `home` yet.
 
 1. Copy `deploy/home/` to `/srv/igor` on `home`.
-2. Create `.env` from `.env.example`: an image tag and a new password for igor.
+2. Create `.env` from `.env.example`: a version such as `2026.46.0` and a new password for igor.
 3. Create the broker users `igor` and `homeassistant`, each prompting for its password.
 
    ```bash
@@ -160,7 +160,7 @@ Checked on 2026-11-15: Docker 26.1.4 with Compose v2.27.1, ports 1883 and 9101 f
 6. In Home Assistant add the MQTT integration: broker `127.0.0.1`, port 1883, user `homeassistant`. This needs no restart.
 7. Check `curl -s 127.0.0.1:9101/metrics | grep igor_relay_state` against Evok.
 
-`ghcr.io/thaum-xyz/igor` is built by `.github/workflows/igor.yaml` on pushes to `master` that touch `igor/`. The package is private until its visibility is changed, so `home` needs `docker login ghcr.io` or a public package.
+Every push to `master` that touches `igor/` is a release built by `.github/workflows/igor.yaml`: image `ghcr.io/thaum-xyz/igor:<version>` (and `latest`) plus git tag `igor-v<version>`. Versions are `YYYY.WW.PATCH`: ISO year, ISO week, and the week's release count from 0, e.g. `2026.46.0`. The package is private until its visibility is changed, so `home` needs `docker login ghcr.io` or a public package.
 
 ### While Evok still runs
 
