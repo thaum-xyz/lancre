@@ -1,0 +1,28 @@
+# Try igor on a laptop: fake board, open broker, throwaway Home Assistant.
+# Not for the Pi; see deploy/home.
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    volumes:
+      - ./dev/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    ports:
+      - "127.0.0.1:1883:1883"
+
+  igor:
+    build: .
+    depends_on: [mosquitto]
+    volumes:
+      - ./dev/config.yaml:/etc/igor/config.yaml:ro
+    ports:
+      - "127.0.0.1:9101:9101"
+
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:2025.9.4
+    depends_on: [mosquitto]
+    volumes:
+      - ha-config:/config
+    ports:
+      - "127.0.0.1:8123:8123"
+
+volumes:
+  ha-config:
