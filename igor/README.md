@@ -20,7 +20,7 @@ igor is a connector. It holds no control logic and does not know what a relay dr
 | `internal/hass` | Topic names and discovery payloads. |
 | `internal/config` | Config file loading. Reference: [config.example.yaml](config.example.yaml). |
 | `docker-compose.yaml`, `dev/` | Laptop stack: fake board, open broker, throwaway Home Assistant. |
-| `deploy/home/` | Stack for `home`: broker with passwords, igor in `observe` mode. |
+| `deploy/home/` | Stack for `home`: broker without passwords on loopback, igor in `observe` mode. |
 
 ## Modes
 
@@ -131,36 +131,24 @@ Drivers run against periph's I2C and 1-Wire playback fakes; nothing needs hardwa
 
 ## Deploy on `home`
 
-Checked on 2026-11-15: Docker 26.1.4 with Compose v2.27.1, ports 1883 and 9101 free. The steps below have not been run on `home` yet.
+Run on `home` on 2026-11-15 with igor 2026.46.0 (Docker 26.1.4, Compose v2.27.1); relay and input readings matched Evok's.
 
 1. Copy `deploy/home/` to `/srv/igor` on `home`.
-2. Create `.env` from `.env.example`: a version such as `2026.46.0` and a new password for igor.
-3. Create the broker users `igor` and `homeassistant`, each prompting for its password.
-
-   ```bash
-   docker compose run --rm mosquitto mosquitto_passwd -c /mosquitto/config/passwd igor
-   ```
-
-   ```bash
-   docker compose run --rm mosquitto mosquitto_passwd /mosquitto/config/passwd homeassistant
-   ```
-
-4. Hand the password file to the broker's user; a root-owned file stops Mosquitto 2.1 from starting.
-
-   ```bash
-   docker compose run --rm mosquitto chown mosquitto:mosquitto /mosquitto/config/passwd
-   ```
-
-5. Start both containers.
+2. Create `.env` from `.env.example` with a version such as `2026.46.0`.
+3. Start both containers.
 
    ```bash
    docker compose up -d
    ```
 
-6. In Home Assistant add the MQTT integration: broker `127.0.0.1`, port 1883, user `homeassistant`. This needs no restart.
-7. Check `curl -s 127.0.0.1:9101/metrics | grep igor_relay_state` against Evok.
+4. In Home Assistant add the MQTT integration: broker `127.0.0.1`, port 1883, no user. This needs no restart.
+5. Check `curl -s 127.0.0.1:9101/metrics | grep igor_relay_state` against Evok.
 
-Every push to `master` that touches `igor/` is a release built by `.github/workflows/igor.yaml`: image `ghcr.io/thaum-xyz/igor:<version>` (and `latest`) plus git tag `igor-v<version>`. Versions are `YYYY.WW.PATCH`: ISO year, ISO week, and the week's release count from 0, e.g. `2026.46.0`. The package is private until its visibility is changed, so `home` needs `docker login ghcr.io` or a public package.
+Over SSH, `docker compose pull` on `home` fails with `error getting credentials`: the Docker CLI finds the desktop `docker-credential-secretservice` helper and no keyring. Pull with a `DOCKER_CONFIG` whose `config.json` names a helper that answers "not found", or from a desktop session.
+
+The broker has no authentication until the HAOS migration is done; its port is published on the Pi's loopback only, which Home Assistant (host networking) can reach.
+
+Every push to `master` that touches `igor/` is a release built by `.github/workflows/igor.yaml`: image `ghcr.io/thaum-xyz/igor:<version>` (and `latest`) plus git tag `igor-v<version>`. Versions are `YYYY.WW.PATCH`: ISO year, ISO week, and the week's release count from 0, e.g. `2026.46.0`.
 
 ### While Evok still runs
 

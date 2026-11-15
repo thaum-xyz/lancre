@@ -3,7 +3,6 @@
 mode: observe
 mqtt:
   url: tcp://mosquitto:1883
-  username: igor
 relays:
   defaults: {on_silent: hold, max_on: 0, off_on_start: false}
   1: {on_silent: "off"}                                    # boiler valve
