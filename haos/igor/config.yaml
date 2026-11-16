@@ -64,7 +64,7 @@ schema:
     "8": *rule
   digital_inputs:
     debounce: *duration
-    invert: [int(1,12)]
+    invert: ["int(1,12)"] # quoted: unquoted, the comma splits it into two list items
   analog_inputs:
     enabled: bool?
     interval: *duration
