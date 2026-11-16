@@ -2,7 +2,7 @@
 
 Keeps long-term statistics (energy, hourly means); short-term history starts fresh. Rehearsed on 2026-11-15 against HA 2025.9.4 (schema 50) and PostgreSQL 17.11: 3 067 810 + 191 974 + 170 rows loaded in 71 s, HA started twice with no warning, migration or schema repair. Why this procedure: [research](../research/recorder-sqlite-to-postgres.md).
 
-Not rehearsed: sums of real `sum` sensors continuing after the switch. Check the energy dashboard the hour after.
+Done on `home` on 2026-11-16 (3 068 649 + 182 259 + 170 rows): HA restarted once, sums of the inverter energy sensors continued across the switch, one 5-minute statistics period was lost.
 
 | Needs | Value |
 |---|---|
@@ -28,13 +28,13 @@ Not rehearsed: sums of real `sum` sensors continuing after the switch. Check the
    mkdir -p work && ssh pi@home 'sudo cat /home/pi/ha-copy.db && sudo rm /home/pi/ha-copy.db' > work/ha-copy.db
    ```
 
-3. Create the schema, load the three statistics tables, fix the identity sequences and verify. The script refuses a non-empty target or a schema version that differs from the image. Every table line must end in `OK`.
+3. Create the schema, load the three statistics tables, fix the identity sequences and verify. The copy is in WAL mode, so its directory is mounted writable. The script refuses a non-empty target or a schema version that differs from the image. Every table line must end in `OK`.
 
    ```sh
    PGPASSWORD=$(cat lancre-db-pass) docker run --rm --entrypoint python3 \
      -e PGPASSWORD -e PGHOST=postgres-lb.lancre.ankhmorpork.thaum.xyz \
      -e PGDATABASE=homeassistant -e PGUSER=homeassistant -e SQLITE=/data/ha-copy.db \
-     -v "$PWD/work:/data:ro" -v "$PWD/hack:/scripts:ro" \
+     -v "$PWD/work:/data" -v "$PWD/hack:/scripts:ro" \
      ghcr.io/home-assistant/home-assistant:2025.9.4 /scripts/recorder_move.py
    ```
 
