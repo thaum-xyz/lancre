@@ -10,11 +10,3 @@ zmc.krupa.net.pl {
     }
     tls thaumxyz@gmail.com
 }
-lancre.thaum.xyz {
-    # prometheus 0.0.0.0:9180
-    proxy / 192.168.20.45:9090 {
-        transparent
-    }
-    basicauth / omniscient cWaXoxDavhtaqZ9a7RtdpDWvY5rZtA
-    tls thaumxyz@gmail.com
-}
