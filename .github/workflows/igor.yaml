@@ -2,7 +2,7 @@ name: igor
 
 on:
   pull_request:
-    paths: ["igor/**", ".github/workflows/igor.yaml"]
+    paths: ["igor/**", "haos/igor/**", ".github/workflows/igor.yaml"]
   push:
     branches: [master]
     paths: ["igor/**", ".github/workflows/igor.yaml"]
@@ -65,3 +65,15 @@ jobs:
         run: |
           git tag "igor-v${{ steps.version.outputs.version }}"
           git push origin "igor-v${{ steps.version.outputs.version }}"
+      # The HAOS app installs image:version, so its version is the tag just pushed.
+      # A GITHUB_TOKEN push starts no workflow, and haos/ is outside the paths above.
+      - name: Point the HAOS app at this release
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          sed -i "s/^version: \"[^\"]*\"/version: \"$VERSION\"/" haos/igor/config.yaml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "haos/igor: $VERSION" haos/igor/config.yaml
+          git pull --rebase origin master
+          git push origin HEAD:master

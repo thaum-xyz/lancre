@@ -21,6 +21,7 @@ igor is a connector. It holds no control logic and does not know what a relay dr
 | `internal/config` | Config file loading. Reference: [config.example.yaml](config.example.yaml). |
 | `docker-compose.yaml`, `dev/` | Laptop stack: fake board, open broker, throwaway Home Assistant. |
 | `deploy/home/` | Stack for `home`: broker without passwords on loopback, igor in `observe` mode. |
+| `../haos/igor/` | The HAOS app: manifest, options schema, defaults. |
 
 ## Modes
 
@@ -148,7 +149,7 @@ Over SSH, `docker compose pull` on `home` fails with `error getting credentials`
 
 The broker has no authentication until the HAOS migration is done; its port is published on the Pi's loopback only, which Home Assistant (host networking) can reach.
 
-Every push to `master` that touches `igor/` is a release built by `.github/workflows/igor.yaml`: image `ghcr.io/thaum-xyz/igor:<version>` (and `latest`) plus git tag `igor-v<version>`. Versions are `YYYY.WW.PATCH`: ISO year, ISO week, and the week's release count from 0, e.g. `2026.46.0`.
+Every push to `master` that touches `igor/` is a release built by `.github/workflows/igor.yaml`: image `ghcr.io/thaum-xyz/igor:<version>` (and `latest`), git tag `igor-v<version>`, and a commit setting the HAOS app's `version:`. Versions are `YYYY.WW.PATCH`: ISO year, ISO week, and the week's release count from 0, e.g. `2026.46.0`.
 
 ### While Evok still runs
 
@@ -186,8 +187,6 @@ Then, with Evok stopped, set `mode: active`, remove the two `enabled: false` lin
 | Analog output on real hardware | Untested. It needs `dtoverlay=pwm,pin=18,func=2` (absent on `home` today) and a writable `/sys/class/pwm` inside the container; without the PWM chip igor logs an error and runs with no AO entity. See [docs/research/haos-hardware-access.md](../docs/research/haos-hardware-access.md). |
 | igor stopped or crashed | Relays stay as they were; no failsafe runs. Alert on the scrape target being down. |
 
-## Not built yet
+## HAOS app
 
-| Item | Where it is tracked |
-|------|---------------------|
-| HAOS app manifest and `repository.yaml` | [lancre#15](https://github.com/thaum-xyz/lancre/issues/15) |
+[haos/igor](../haos/igor/config.yaml) runs this image with its options as the config file (`IGOR_CONFIG=/data/options.json`); with `SUPERVISOR_TOKEN` set and no `mqtt.username`, igor asks Supervisor for the Mosquitto app's broker and user. Added to HAOS by the repository URL; see [docs/how-to/install-igor-haos-app.md](../docs/how-to/install-igor-haos-app.md).
