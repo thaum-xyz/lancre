@@ -158,8 +158,8 @@ Verified 2026-11-15 with go1.26.4, building a program that imports `host`, `i2cr
 
 | Point | Why uncertain |
 |---|---|
-| Which Evok igor actually replaces (2.4.x native I2C vs ≥2.5.0 Modbus) | Not recorded in this repo (`docs/evok.md`). Check `/opt/evok` or `version.txt` on the Pi before trusting section 4 |
+| Which Evok igor actually replaces (2.4.x native I2C vs ≥2.5.0 Modbus) | Not recorded in this repo (the removed `docs/evok.md` did not say). Check `/opt/evok` or `version.txt` on the Pi before trusting section 4 |
 | `bcm283x` DMA PWM on BCM2711 (Pi 4) | Not tested. It needs root and `/dev/mem`. The kernel `pwm` overlay avoids it |
-| Evok's AO frequency | The 2.4.34 config has `frequency = 100` (`EVOK/etc/evok-unipi1.1.conf#L103-L105`); `docs/evok.md` says 400 Hz. Evok drives it with pigpio `set_PWM_*` (pigpio PWM, range 1000, duty = V×100 on 1.1, inverted on 1.0) (`EVOK/evok/unipig.py#L671-L700`) |
+| Evok's AO frequency | The 2.4.34 config has `frequency = 100` (`EVOK/etc/evok-unipi1.1.conf#L103-L105`); the removed `docs/evok.md` said 400 Hz. Evok drives it with pigpio `set_PWM_*` (pigpio PWM, range 1000, duty = V×100 on 1.1, inverted on 1.0) (`EVOK/evok/unipig.py#L671-L700`) |
 | DS2482-100 and DS18B20 datasheets | analog.com timed out on 2026-11-15. Command codes and timings above are cross-checked against the periph and Linux kernel drivers, not the PDFs |
 | DI polarity | Evok sets `PUD_UP` and reports the raw level (`EVOK/evok/unipig.py#L756`, `EVOK/evok/apigpio.py#L165-L188`). Whether 1 means "input active" depends on the board's optocoupler stage, which was not checked |
