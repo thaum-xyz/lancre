@@ -14,7 +14,7 @@ Menu names are those of HA Core 2025.9 ("Add-ons"); later Cores call them "Apps"
 
 1. In Home Assistant open Settings → Add-ons → Add-on store, ⋮ → Repositories, add `https://github.com/thaum-xyz/lancre` and close the dialog.
 2. "igor" appears under "lancre apps"; open it and Install. Supervisor pulls the image.
-3. Configuration tab: compare the options with [config.example.yaml](../../igor/config.example.yaml), which explains every key. Save.
+3. Configuration tab: compare the options with [igor.example.yaml](../../igor/igor.example.yaml), which explains every key. Save.
 4. Info tab: turn on Start on boot and Watchdog (restarts igor when its Docker health check fails), then Start.
 5. Log tab: expect these two lines and no error.
 

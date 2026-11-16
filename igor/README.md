@@ -18,7 +18,7 @@ igor is a connector. It holds no control logic and does not know what a relay dr
 | `internal/unipi` | Chip drivers and the board's fixed wiring; a fake board for laptops. |
 | `internal/bridge` | Polls the board, carries out the rule engine's decisions, publishes, exports metrics. |
 | `internal/hass` | Topic names and discovery payloads. |
-| `internal/config` | Config file loading. Reference: [config.example.yaml](config.example.yaml). |
+| `internal/config` | Config file loading. Reference: [igor.example.yaml](igor.example.yaml). |
 | `docker-compose.yaml`, `dev/` | Laptop stack: fake board, open broker, throwaway Home Assistant. |
 | `deploy/home/` | Stack for `home`: broker without passwords on loopback, igor in `observe` mode. |
 | `../haos/igor/` | The HAOS app: manifest, options schema, defaults. |

@@ -18,7 +18,7 @@ services:
       - /dev/i2c-1
       - /dev/gpiochip0
     volumes:
-      - ./config.yaml:/etc/igor/config.yaml:ro
+      - ./igor.yaml:/etc/igor/config.yaml:ro
     ports:
       - "9101:9101"   # /metrics for ankhmorpork Prometheus
 
