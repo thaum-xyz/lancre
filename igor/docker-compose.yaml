@@ -12,7 +12,7 @@ services:
     build: .
     depends_on: [mosquitto]
     volumes:
-      - ./dev/config.yaml:/etc/igor/config.yaml:ro
+      - ./dev/igor.yaml:/etc/igor/config.yaml:ro
     ports:
       - "127.0.0.1:9101:9101"
 

@@ -1,0 +1,15 @@
+name: haos
+
+on:
+  pull_request:
+    paths: ["haos/**", "repository.yaml", ".github/workflows/haos.yaml"]
+
+jobs:
+  # The checks Home Assistant runs on official apps: config schema, deprecated keys.
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: frenck/action-addon-linter@v2
+        with:
+          path: haos/igor

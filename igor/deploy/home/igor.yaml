@@ -1,5 +1,5 @@
 # igor on `home` while Evok still runs (lancre#13). Keys are explained in
-# ../../config.example.yaml.
+# ../../igor.example.yaml.
 mode: observe
 mqtt:
   url: tcp://mosquitto:1883

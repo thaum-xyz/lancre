@@ -13,7 +13,7 @@ import (
 )
 
 func TestExampleFileGivesTheLiveRules(t *testing.T) {
-	raw, err := os.ReadFile("../../config.example.yaml")
+	raw, err := os.ReadFile("../../igor.example.yaml")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -175,7 +175,7 @@ func TestHAOSAppOptionsGiveTheLiveRules(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%s\n%v", options, err)
 	}
-	example, err := os.ReadFile("../../config.example.yaml")
+	example, err := os.ReadFile("../../igor.example.yaml")
 	if err != nil {
 		t.Fatal(err)
 	}

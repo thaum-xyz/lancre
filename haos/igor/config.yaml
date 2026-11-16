@@ -1,6 +1,6 @@
 # HAOS app for igor: the published image, configured through options that
 # Supervisor writes to /data/options.json, which igor reads as its config file.
-# Keys are explained in igor/config.example.yaml.
+# Keys are explained in igor/igor.example.yaml.
 name: igor
 slug: igor
 description: UniPi 1.1 relays, inputs and 1-Wire probes over MQTT
