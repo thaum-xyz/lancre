@@ -1,10 +1,13 @@
 package config
 
 import (
+	"encoding/json"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"gopkg.in/yaml.v3"
 
 	"github.com/thaum-xyz/lancre/igor/internal/rules"
 )
@@ -148,5 +151,50 @@ func TestBareOffMeansOff(t *testing.T) {
 	}
 	if r, _ := c.Rules(); r.Rules[0].OnSilent != rules.SilentOff {
 		t.Fatal("bare off was read as hold")
+	}
+}
+
+// The HAOS app's default options, as Supervisor writes them to
+// /data/options.json, must be a valid config with the live rules.
+func TestHAOSAppOptionsGiveTheLiveRules(t *testing.T) {
+	raw, err := os.ReadFile("../../../haos/igor/config.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var app struct {
+		Options map[string]any `yaml:"options"`
+	}
+	if err := yaml.Unmarshal(raw, &app); err != nil {
+		t.Fatal(err)
+	}
+	options, err := json.Marshal(app.Options)
+	if err != nil {
+		t.Fatal(err)
+	}
+	c, err := Parse(options)
+	if err != nil {
+		t.Fatalf("%s\n%v", options, err)
+	}
+	example, err := os.ReadFile("../../config.example.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	want, err := Parse(example)
+	if err != nil {
+		t.Fatal(err)
+	}
+	wantRules, _ := want.Rules()
+	wantRules.Active = true
+	if got, _ := c.Rules(); got != wantRules {
+		t.Fatalf("rules =\n%+v\nwant\n%+v", got, wantRules)
+	}
+	if c.Mode != "active" || c.AnalogOutEnabled() || !c.AnalogEnabled() || !c.OneWireEnabled() {
+		t.Fatalf("mode %s, ao %v, ai %v, 1-wire %v", c.Mode, c.AnalogOutEnabled(), c.AnalogEnabled(), c.OneWireEnabled())
+	}
+	if c.Correction(1) != 5.549713 || c.Correction(2) != 5.551579 {
+		t.Fatalf("corrections: %v %v", c.Correction(1), c.Correction(2))
+	}
+	if c.MQTT.TopicPrefix != "igor" || c.MQTT.DiscoveryPrefix != "homeassistant" || c.HTTP.Listen != ":9101" {
+		t.Fatalf("mqtt/http: %+v %+v", c.MQTT, c.HTTP)
 	}
 }

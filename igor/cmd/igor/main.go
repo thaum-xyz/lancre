@@ -22,6 +22,7 @@ import (
 	"github.com/thaum-xyz/lancre/igor/internal/bridge"
 	"github.com/thaum-xyz/lancre/igor/internal/config"
 	"github.com/thaum-xyz/lancre/igor/internal/hass"
+	"github.com/thaum-xyz/lancre/igor/internal/supervisor"
 	"github.com/thaum-xyz/lancre/igor/internal/unipi"
 )
 
@@ -29,8 +30,16 @@ import (
 var version = "dev"
 
 func main() {
-	path := flag.String("config", "/etc/igor/config.yaml", "path to the config file")
+	def := "/etc/igor/config.yaml"
+	if p := os.Getenv("IGOR_CONFIG"); p != "" {
+		def = p // the HAOS app points this at /data/options.json
+	}
+	path := flag.String("config", def, "path to the config file (YAML or JSON)")
+	health := flag.String("healthcheck", "", "GET this URL, exit 0 on HTTP 200 (the image's HEALTHCHECK; it has no curl)")
 	flag.Parse()
+	if *health != "" {
+		os.Exit(healthcheck(*health))
+	}
 	log := slog.New(slog.NewTextHandler(os.Stderr, nil))
 	if err := run(*path, log); err != nil {
 		log.Error("igor stopped", "err", err)
@@ -43,7 +52,15 @@ func run(path string, log *slog.Logger) error {
 	if err != nil {
 		return err
 	}
-	log.Info("starting igor", "version", version, "mode", cfg.Mode, "board", cfg.Board)
+	// As a HAOS app without a configured user, take the Mosquitto app's broker.
+	if tok := os.Getenv("SUPERVISOR_TOKEN"); tok != "" && cfg.MQTT.Username == "" {
+		b, err := supervisor.MQTT(context.Background(), supervisor.URL, tok)
+		if err != nil {
+			return fmt.Errorf("mqtt broker from Supervisor: %w", err)
+		}
+		cfg.MQTT.URL, cfg.MQTT.Username, cfg.MQTT.Password = b.URL, b.Username, b.Password
+	}
+	log.Info("starting igor", "version", version, "mode", cfg.Mode, "board", cfg.Board, "broker", cfg.MQTT.URL)
 	for _, w := range cfg.Warnings() {
 		log.Warn(w)
 	}
@@ -179,4 +196,19 @@ func (p *publisher) Publish(topic string, payload []byte, retain bool) {
 	default:
 		p.log.Warn("publish queue full, message dropped", "topic", topic)
 	}
+}
+
+func healthcheck(url string) int {
+	c := http.Client{Timeout: 3 * time.Second}
+	resp, err := c.Get(url)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
+	}
+	resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		fmt.Fprintln(os.Stderr, resp.Status)
+		return 1
+	}
+	return 0
 }
