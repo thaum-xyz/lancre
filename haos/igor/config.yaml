@@ -5,7 +5,7 @@ name: igor
 slug: igor
 description: UniPi 1.1 relays, inputs and 1-Wire probes over MQTT
 url: https://github.com/thaum-xyz/lancre/tree/master/igor
-version: "2026.47.0" # = image tag; CI sets it on every igor release
+version: "2026.47.1" # = image tag; CI sets it on every igor release
 image: ghcr.io/thaum-xyz/igor
 arch: [aarch64]
 stage: experimental
