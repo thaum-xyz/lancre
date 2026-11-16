@@ -5,7 +5,7 @@ rpi_gpu_mem: 128
 rpi_bt: true
 rpi_swap_size: 400
 
-healthcheck_url: "https://hc-ping.com/4a065773-d34c-4e78-b9cb-54f4de85bac6"
+healthcheck_url: "<redacted>"
 
 kiosk_url: "https://zmc.krupa.net.pl"
 kiosk_delay: 10
