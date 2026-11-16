@@ -27,7 +27,7 @@ type Probes struct {
 }
 
 func NewProbes(bus i2c.Bus) *Probes {
-	return newProbes(func() (onewire.BusSearcher, error) { return ds248x.New(bus, addrOneWir, nil) })
+	return newProbes(func() (onewire.BusSearcher, error) { return ds248x.New(bus, addrOneWir, &ds248x.DefaultOpts) })
 }
 
 func newProbes(open func() (onewire.BusSearcher, error)) *Probes {
